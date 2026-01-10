@@ -1,0 +1,39 @@
+---
+title: Key Trends
+description: Key trends and analysis for a given date (optional).
+openapi: openapi.json GET /v1/market/trends
+---
+
+<div style={{ maxWidth: 760 }}>
+
+<h2 style={{ fontSize: "22px", marginBottom: 8 }}>Overview</h2>
+
+<p style={{ fontSize: 15, lineHeight: 1.8 }}>
+  The <strong>Key Trends</strong> API provides trend summaries that may impact the crypto market, with emphasis on
+  macro and market-specific factors relevant to the KR market.
+</p>
+
+<Note>
+  This endpoint returns a <strong>point-in-time snapshot</strong>. If <code>date</code> is omitted, the latest available
+  snapshot is returned.
+</Note>
+
+<h3 style={{ marginTop: 20 }}>How to use</h3>
+
+<Steps>
+  <Step title="Optional: choose a date">
+    Provide <code>date</code> (YYYY-MM-DD). If omitted, the latest available snapshot is returned.
+  </Step>
+
+  <Step title="Drive narrative modules">
+    Use the returned trends to power “what’s driving the market” sections, and link them to related news/events.
+  </Step>
+</Steps>
+
+<Warning>
+  Outputs are for informational purposes only and should not be interpreted as financial advice.
+</Warning>
+
+</div>
+
+

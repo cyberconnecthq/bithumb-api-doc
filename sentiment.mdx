@@ -1,0 +1,37 @@
+---
+title: Market Sentiment
+description: Market sentiment snapshot (date param reserved; currently ignored).
+openapi: openapi.json GET /v1/market/sentiment
+---
+
+<div style={{ maxWidth: 760 }}>
+
+<h2 style={{ fontSize: "22px", marginBottom: 8 }}>Overview</h2>
+
+<p style={{ fontSize: 15, lineHeight: 1.8 }}>
+  The <strong>Market Sentiment</strong> API returns a snapshot of overall market sentiment signals.
+</p>
+
+<Note>
+  The optional <code>date</code> query parameter is <strong>reserved</strong> and is currently ignored.
+</Note>
+
+<h3 style={{ marginTop: 20 }}>How to use</h3>
+
+<Steps>
+  <Step title="Fetch the latest snapshot">
+    Call the endpoint without parameters to get the most recent sentiment snapshot.
+  </Step>
+
+  <Step title="Use as a high-level indicator">
+    Use the response as a dashboard indicator, or combine it with your own breadth/flow metrics for scoring.
+  </Step>
+</Steps>
+
+<Warning>
+  Outputs are for informational purposes only and should not be interpreted as financial advice.
+</Warning>
+
+</div>
+
+

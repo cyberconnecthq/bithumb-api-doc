@@ -1,0 +1,39 @@
+---
+title: Drop Tokens
+description: Drop token news list for a given date (optional).
+openapi: openapi.json GET /v1/market/drop-tokens
+---
+
+<div style={{ maxWidth: 760 }}>
+
+<h2 style={{ fontSize: "22px", marginBottom: 8 }}>Overview</h2>
+
+<p style={{ fontSize: 15, lineHeight: 1.8 }}>
+  The <strong>Drop Tokens</strong> API returns a list of news items focused on tokens showing notable downside activity
+  for the selected day.
+</p>
+
+<Note>
+  This endpoint returns a <strong>point-in-time snapshot</strong>. If <code>date</code> is omitted, the most recent
+  snapshot is returned.
+</Note>
+
+<h3 style={{ marginTop: 20 }}>How to use</h3>
+
+<Steps>
+  <Step title="Optional: choose a date">
+    Provide <code>date</code> (YYYY-MM-DD). If omitted, the latest available snapshot is returned.
+  </Step>
+
+  <Step title="Pair with risk controls">
+    Use the list to drive alerts and watchlists, and pair it with your own risk rules (volatility, liquidity, etc).
+  </Step>
+</Steps>
+
+<Warning>
+  Outputs are for informational purposes only and should not be interpreted as financial advice.
+</Warning>
+
+</div>
+
+

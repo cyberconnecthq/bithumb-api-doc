@@ -1,0 +1,37 @@
+---
+title: Must-Know News
+description: Must-know news list for a given date (optional).
+openapi: openapi.json GET /v1/market/must-know-news
+---
+
+<div style={{ maxWidth: 760 }}>
+
+<h2 style={{ fontSize: "22px", marginBottom: 8 }}>Overview</h2>
+
+<p style={{ fontSize: 15, lineHeight: 1.8 }}>
+  The <strong>Must-Know News</strong> API returns a curated list of market headlines for quick daily context.
+</p>
+
+<Note>
+  This endpoint returns a <strong>point-in-time snapshot</strong>. Results may change as new data is ingested.
+</Note>
+
+<h3 style={{ marginTop: 20 }}>How to use</h3>
+
+<Steps>
+  <Step title="Optional: choose a date">
+    Provide <code>date</code> (YYYY-MM-DD). If omitted, the latest available snapshot is returned.
+  </Step>
+
+  <Step title="Render as a digest">
+    Display the list as a daily digest and link out to the original sources when available.
+  </Step>
+</Steps>
+
+<Warning>
+  Outputs are for informational purposes only and should not be interpreted as financial advice.
+</Warning>
+
+</div>
+
+

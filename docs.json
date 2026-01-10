@@ -17,10 +17,30 @@
                 ]
             },
             {
-                "group": "API reference",
-
+                "group": "Market API",
                 "pages": [
-                    "market-report",
+                    "must-know-news",
+                    "rise-tokens",
+                    "drop-tokens",
+                    "sentiment",
+                    "trends",
+                    "events"
+                ],
+                "api": {
+                    "playground": {
+                        "display": "interactive",
+                        "validation": {
+                            "enabled": true
+                        }
+                    },
+                    "examples": {
+                        "languages": ["curl", "python", "javascript"]
+                    }
+                }
+            },
+            {
+                "group": "Other APIs",
+                "pages": [
                     "ai-report",
                     "ai-recommended-prompts",
                     "ai-recommended-assets"

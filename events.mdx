@@ -1,0 +1,38 @@
+---
+title: Major Events Tonight
+description: Major events list for a given date (optional).
+openapi: openapi.json GET /v1/market/events
+---
+
+<div style={{ maxWidth: 760 }}>
+
+<h2 style={{ fontSize: "22px", marginBottom: 8 }}>Overview</h2>
+
+<p style={{ fontSize: 15, lineHeight: 1.8 }}>
+  The <strong>Major Events Tonight</strong> API returns a list of upcoming events that may impact the crypto market.
+</p>
+
+<Note>
+  This endpoint returns a <strong>point-in-time snapshot</strong>. If <code>date</code> is omitted, the most recent
+  snapshot is returned.
+</Note>
+
+<h3 style={{ marginTop: 20 }}>How to use</h3>
+
+<Steps>
+  <Step title="Optional: choose a date">
+    Provide <code>date</code> (YYYY-MM-DD). If omitted, the latest available snapshot is returned.
+  </Step>
+
+  <Step title="Schedule alerts">
+    Use the events list to schedule reminders/alerts and to annotate dashboards with “tonight’s key events”.
+  </Step>
+</Steps>
+
+<Warning>
+  Outputs are for informational purposes only and should not be interpreted as financial advice.
+</Warning>
+
+</div>
+
+
