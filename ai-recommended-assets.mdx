@@ -51,6 +51,20 @@ openapi: openapi.json GET /v1/market/ai-recommended-assets
   </p>
 </div>
 
+<Note>
+  <strong>Score format — wire bytes vs. viewer display.</strong> Every
+  score field is a <code>number</code> emitted with one decimal place
+  on the wire, including the trailing zero for whole values
+  (<code>"trading_activity": 10.0</code>). The playground response
+  viewer above — like Postman, Swagger UI, browser DevTools, and most
+  other JSON tools — parses the response through JavaScript first, and
+  <code>JSON.parse("10.0").toString()</code> is <code>"10"</code>, so
+  the trailing zero is dropped in display. To verify the actual wire
+  format, run the cURL snippet below directly in a terminal. To render
+  scores with one decimal in your application, format on display, for
+  example <code>value.toFixed(1)</code> in JavaScript.
+</Note>
+
 <h3 style={{ marginTop: 20 }}>How to use</h3>
 
 <Steps>
