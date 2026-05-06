@@ -2299,7 +2299,8 @@
                         "type": "string"
                     },
                     "total_score": {
-                        "type": "number"
+                        "type": "string",
+                        "example": "8.1"
                     },
                     "sentiment_label": {
                         "type": "string"
@@ -2333,22 +2334,28 @@
                 "type": "object",
                 "properties": {
                     "market_sentiment": {
-                        "type": "number"
+                        "type": "string",
+                        "example": "7.8"
                     },
                     "price_resilience": {
-                        "type": "number"
+                        "type": "string",
+                        "example": "10.0"
                     },
                     "price_stability": {
-                        "type": "number"
+                        "type": "string",
+                        "example": "6.0"
                     },
                     "search_trend": {
-                        "type": "number"
+                        "type": "string",
+                        "example": "10.0"
                     },
                     "trading_activity": {
-                        "type": "number"
+                        "type": "string",
+                        "example": "6.0"
                     },
                     "upside_energy": {
-                        "type": "number"
+                        "type": "string",
+                        "example": "8.5"
                     }
                 }
             },
@@ -3734,7 +3741,8 @@
                         "type": "string"
                     },
                     "total_score": {
-                        "type": "number"
+                        "type": "string",
+                        "example": "8.1"
                     }
                 }
             },
