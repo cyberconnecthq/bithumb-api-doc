@@ -1285,7 +1285,7 @@
             "AccessToken": []
           }
         ],
-        "description": "Returns tokens with overall score >= 6.0 from the top-200 by market cap, ranked highest-first.\nOverall score = Round(Average(6 individual metric scores), 1).\nEach item includes: rank, asset info, overall score, 6 category scores, and a Korean summary (max 20 chars).",
+        "description": "Returns tokens with overall score >= 6.0 drawn from the top-200 by market cap, ranked highest-first. Capped at 50 items.\nOverall score = Round(Average(6 individual metric scores), 1).\nEach item includes: rank, asset info, overall score, 6 category scores, and a Korean summary (max 20 chars).",
         "tags": [
           "Market"
         ],
@@ -1453,19 +1453,11 @@
             }
           },
           {
-            "description": "Ticker (required when type is asset_price_surge or asset_price_decline)",
-            "name": "ticker",
+            "description": "If true, serves the pre-polish base_report (raw model output) instead of post-polish ai_json_*. Used by bithumb-qa to score raw model output.",
+            "name": "raw",
             "in": "query",
             "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "description": "Sector (required when type is undervalued_asset; used as filter on bithumb_reports)",
-            "name": "sector",
-            "in": "query",
-            "schema": {
-              "type": "string"
+              "type": "boolean"
             }
           }
         ],
@@ -1541,6 +1533,14 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "description": "If true, serves the pre-polish base_report (raw model output) instead of post-polish ai_json_*. Used by bithumb-qa to score raw model output.",
+            "name": "raw",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
           }
         ],
         "responses": {
@@ -1594,7 +1594,7 @@
             "AccessToken": []
           }
         ],
-        "description": "Returns tokens with overall score < 6.0 from the top-200 by market cap, ranked lowest-first.\nOverall score = Round(Average(6 individual metric scores), 1).\nEach item includes: rank, asset info, overall score, 6 category scores, and a Korean summary (max 20 chars).",
+        "description": "Returns tokens with overall score < 4.0 drawn from the top-200 by market cap, ranked lowest-first. Capped at 50 items.\nOverall score = Round(Average(6 individual metric scores), 1).\nEach item includes: rank, asset info, overall score, 6 category scores, and a Korean summary (max 20 chars).",
         "tags": [
           "Market"
         ],
@@ -1662,6 +1662,14 @@
             "in": "query",
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "description": "If true, serves the pre-polish base_report (raw model output) instead of post-polish ai_json_*. Used by bithumb-qa to score raw model output.",
+            "name": "raw",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
             }
           }
         ],
@@ -1739,6 +1747,14 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "description": "If true, serves the pre-polish base_report (raw model output) instead of post-polish ai_json_*. Used by bithumb-qa to score raw model output.",
+            "name": "raw",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
           }
         ],
         "responses": {
@@ -1815,6 +1831,14 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "description": "If true, serves the pre-polish base_report (raw model output) instead of post-polish ai_json_*. Used by bithumb-qa to score raw model output.",
+            "name": "raw",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
           }
         ],
         "responses": {
@@ -1871,87 +1895,6 @@
         }
       }
     },
-    "/v1/market/report": {
-      "get": {
-        "security": [
-          {
-            "AccessToken": []
-          }
-        ],
-        "description": "The Market Report API provides a consolidated daily overview of the crypto market, combining market sentiment indicators, trend analysis, sector insights, news highlights, and asset performance into a single structured response.\nThe API evaluates overall market direction (Up / Flat / Down) using internal logic and sentiment indicators such as the Fear & Greed Index and the number of rising assets compared to the previous day. It also surfaces key market trends, trending sectors, and must-know news, including AI-highlighted headlines and major upcoming events.\nAdditionally, the API delivers asset-level insights such as top gainers and losers versus the previous day, along with optional notification prompts for market alerts. All outputs are generated as a point-in-time snapshot and are intended for informational purposes only, without providing investment advice.\nIf specific data points are unavailable, the corresponding fields will return null or be omitted.",
-        "tags": [
-          "Market"
-        ],
-        "summary": "Market Report",
-        "parameters": [
-          {
-            "description": "Date in YYYY-MM-DD format. If date is not provided, returns the most recent data",
-            "name": "date",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "description": "Report type (template key)",
-            "name": "type",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "enum": [
-                "market_sentiment",
-                "market_trends",
-                "must_know_news",
-                "major_events_tonight"
-              ]
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Returns market report on success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/model.GenericResponse-model_QuestionsResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "When request parameters are invalid",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/model.BaseResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "When message not found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/model.BaseResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal server error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/model.BaseResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/v1/market/rise-tokens": {
       "get": {
         "security": [
@@ -1971,6 +1914,14 @@
             "in": "query",
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "description": "If true, serves the pre-polish base_report (raw model output) instead of post-polish ai_json_*. Used by bithumb-qa to score raw model output.",
+            "name": "raw",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
             }
           }
         ],
@@ -2047,6 +1998,14 @@
             "in": "query",
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "description": "If true, serves the pre-polish base_report (raw model output) instead of post-polish ai_json_*. Used by bithumb-qa to score raw model output.",
+            "name": "raw",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
             }
           }
         ],
@@ -2201,6 +2160,14 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "description": "If true, serves the pre-polish base_report (raw model output) instead of post-polish ai_json_*. Used by bithumb-qa to score raw model output.",
+            "name": "raw",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
           }
         ],
         "responses": {
@@ -2276,13 +2243,10 @@
         "type": "object",
         "properties": {
           "bearish": {
-            "type": "number"
+            "type": "integer"
           },
           "bullish": {
-            "type": "number"
-          },
-          "id": {
-            "type": "string"
+            "type": "integer"
           },
           "image_url": {
             "type": "string"
@@ -2305,14 +2269,23 @@
           "score_by_category": {
             "$ref": "#/components/schemas/model.AIRecommendedAssetScoreByCategory"
           },
+          "sentiment_label": {
+            "type": "string"
+          },
           "summary": {
             "type": "string"
           },
           "symbol": {
             "type": "string"
           },
+          "title": {
+            "type": "string"
+          },
           "total_score": {
             "type": "number"
+          },
+          "uid": {
+            "type": "string"
           }
         }
       },
@@ -2396,6 +2369,9 @@
           },
           "generated_at": {
             "type": "string"
+          },
+          "uid": {
+            "type": "string"
           }
         }
       },
@@ -2411,6 +2387,9 @@
           "conclusion": {
             "$ref": "#/components/schemas/model.ComprehensiveReportConclusion"
           },
+          "generated_at": {
+            "type": "string"
+          },
           "onchain": {
             "$ref": "#/components/schemas/model.ComprehensiveReportOnchain"
           },
@@ -2425,6 +2404,9 @@
           },
           "title": {
             "$ref": "#/components/schemas/model.ComprehensiveReportTitle"
+          },
+          "uid": {
+            "type": "string"
           }
         }
       },
@@ -2650,19 +2632,13 @@
           }
         }
       },
-      "model.ComprehensiveData": {
+      "model.ComprehensiveDataItem": {
         "type": "object",
         "properties": {
-          "development_ecosystem": {
+          "content": {
             "type": "string"
           },
-          "infrastructure_stability": {
-            "type": "string"
-          },
-          "market_valuation": {
-            "type": "string"
-          },
-          "network_health": {
+          "title_ko": {
             "type": "string"
           }
         }
@@ -2705,7 +2681,10 @@
         "type": "object",
         "properties": {
           "comprehensive_data": {
-            "$ref": "#/components/schemas/model.ComprehensiveData"
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/model.ComprehensiveDataItem"
+            }
           },
           "outlook": {
             "type": "string"
@@ -2733,6 +2712,9 @@
           "conclusion": {
             "$ref": "#/components/schemas/model.ComprehensiveReportConclusion"
           },
+          "generated_at": {
+            "type": "string"
+          },
           "onchain": {
             "$ref": "#/components/schemas/model.ComprehensiveReportOnchain"
           },
@@ -2744,6 +2726,9 @@
           },
           "title": {
             "$ref": "#/components/schemas/model.ComprehensiveReportTitle"
+          },
+          "uid": {
+            "type": "string"
           }
         }
       },
@@ -3172,26 +3157,6 @@
           }
         }
       },
-      "model.GenericResponse-model_QuestionsResponse": {
-        "type": "object",
-        "properties": {
-          "data": {
-            "$ref": "#/components/schemas/model.QuestionsResponse"
-          },
-          "error_code": {
-            "type": "string",
-            "example": "FORBIDDEN"
-          },
-          "message": {
-            "type": "string",
-            "example": "success"
-          },
-          "success": {
-            "type": "boolean",
-            "example": true
-          }
-        }
-      },
       "model.GenericResponse-model_RecommendationResponse": {
         "type": "object",
         "properties": {
@@ -3561,10 +3526,10 @@
       "model.MarketSentimentResponse": {
         "type": "object",
         "properties": {
-          "feer_greed_index": {
+          "fear_greed_index": {
             "type": "integer"
           },
-          "feer_greed_interpretation": {
+          "fear_greed_interpretation": {
             "type": "string"
           },
           "market_price_fluctuations": {
@@ -3692,17 +3657,6 @@
           }
         }
       },
-      "model.QuestionsResponse": {
-        "type": "object",
-        "properties": {
-          "contents": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          }
-        }
-      },
       "model.ReasoningEffort": {
         "type": "string",
         "enum": [
@@ -3719,9 +3673,6 @@
       "model.RecommendationItem": {
         "type": "object",
         "properties": {
-          "id": {
-            "type": "string"
-          },
           "image_url": {
             "type": "string"
           },
@@ -3740,8 +3691,14 @@
           "symbol": {
             "type": "string"
           },
+          "title": {
+            "type": "string"
+          },
           "total_score": {
             "type": "number"
+          },
+          "uid": {
+            "type": "string"
           }
         }
       },
@@ -3755,6 +3712,9 @@
             }
           },
           "generated_at": {
+            "type": "string"
+          },
+          "uid": {
             "type": "string"
           }
         }
@@ -4085,6 +4045,10 @@
       "model.TokenTerminalMetricsResponse": {
         "type": "object",
         "properties": {
+          "analysis": {
+            "description": "Analysis is a short Korean sentence summarising the 30-day trend\n(start → peak → end + recent slope). Empty string when the series\nis too short to analyse or the response is degraded (no data).\n2026-05-03 audit: chart used to return raw numbers only — frontend\nreaders had no narrative anchor; this field provides the \"월초 X에서\n4월 중순 Y 고점 후 5월 초 Z으로 둔화\" sentence.",
+            "type": "string"
+          },
           "metrics": {
             "type": "array",
             "items": {
