@@ -1,6 +1,6 @@
 ---
 title: AI Report
-description: Structured research report for a crypto asset (snapshot, neutral, beginner-friendly).
+description: Structured research report for crypto assets (snapshot, neutral, beginner-friendly). Returns top-200 Bithumb tokens by default.
 openapi: openapi.json GET /v1/market/ai-report
 ---
 
@@ -9,9 +9,9 @@ openapi: openapi.json GET /v1/market/ai-report
 <h2 style={{ fontSize: "22px", marginBottom: 8 }}>Overview</h2>
 
 <p style={{ fontSize: 15, lineHeight: 1.8 }}>
-  The <strong>AI Report</strong> API generates a structured research report for a given crypto asset,
+  The <strong>AI Report</strong> API generates structured research reports for crypto assets,
   combining real-time market snapshots, trend summaries, technical analysis, sector-optimized on-chain metrics,
-  and community sentiment insights.
+  and community sentiment insights. Only tokens in the <strong>top 200 by market cap</strong> on Bithumb are included.
 </p>
 
 <Note>
@@ -19,32 +19,44 @@ openapi: openapi.json GET /v1/market/ai-report
   It does not provide financial advice.
 </Note>
 
-<h3 style={{ marginTop: 20 }}>What you’ll get</h3>
+<h3 style={{ marginTop: 20 }}>What you'll get</h3>
 
 <ul style={{ fontSize: 15, lineHeight: 1.8 }}>
-  <li><strong>Realtime info</strong>: current snapshot & context for the asset</li>
+  <li><strong>Title</strong>: report headline</li>
   <li><strong>Summary</strong>: concise, beginner-friendly market read</li>
-  <li><strong>Technical analysis</strong>: key chart / momentum interpretations</li>
-  <li><strong>On-chain analysis</strong>: sector-aware on-chain metrics (common/shared/sector-specific)</li>
-  <li><strong>Social data</strong>: community sentiment signals</li>
+  <li><strong>Technical analysis</strong>: key chart / momentum interpretations + <code>summary</code></li>
+  <li><strong>On-chain analysis</strong>: sector-aware on-chain metrics (common/shared/sector-specific) + <code>summary</code></li>
+  <li><strong>Community</strong>: community sentiment signals</li>
   <li><strong>Conclusion</strong>: neutral wrap-up (bullish & bearish factors)</li>
 </ul>
 
 <h3 style={{ marginTop: 20 }}>How to use</h3>
 
 <Steps>
-  <Step title="Pick a ticker">
-    Provide <code>ticker</code> (required). Example: <code>BTC</code>, <code>ETH</code>.
+  <Step title="Call without ticker (default)">
+    Omit <code>ticker</code> to receive reports for <strong>all top-200 tokens</strong> by market cap.
+    The response is a list with <code>ticker</code> and <code>bithumb_rank</code> per item.
   </Step>
 
-  <Step title="Select a report section">
-    Use <code>type</code> to request a specific section (e.g. <code>summary</code>, <code>technical_analysis</code>).
+  <Step title="Or pick a single ticker">
+    Provide <code>ticker</code> (e.g. <code>BTC</code>) to receive a single report.
+    The ticker must be in the top 200 by market cap; otherwise a 404 is returned.
   </Step>
 
   <Step title="Optional: backfill by date">
     Provide <code>date</code> (YYYY-MM-DD). If omitted, the latest snapshot is returned.
   </Step>
 </Steps>
+
+<h3 style={{ marginTop: 20 }}>Response format</h3>
+
+<p style={{ fontSize: 15, lineHeight: 1.8 }}>
+  <strong>Without <code>ticker</code></strong>: returns <code>{"{"} reports: [{"{"} ticker, bithumb_rank, title, summary, ... {"}"}] {"}"}</code>
+</p>
+
+<p style={{ fontSize: 15, lineHeight: 1.8 }}>
+  <strong>With <code>ticker</code></strong>: returns a single report object directly (backward compatible).
+</p>
 
 <Warning>
   If certain data is unavailable or not applicable, corresponding fields may be <code>null</code> or omitted.

@@ -1,0 +1,43 @@
+---
+title: Token Metrics
+description: Returns one coalesced metric series for a symbol.
+openapi: openapi.json GET /v1/market/token-metrics
+---
+
+<div style={{ maxWidth: 760 }}>
+
+<h2 style={{ fontSize: "22px", marginBottom: 8 }}>Overview</h2>
+
+<p style={{ fontSize: 15, lineHeight: 1.8 }}>
+  The <strong>Token Metrics</strong> API returns a single coalesced metric series in
+  <code>data.metrics</code> for a given symbol.
+</p>
+
+<h3 style={{ marginTop: 20 }}>Coalesce order</h3>
+
+<ul style={{ fontSize: 15, lineHeight: 1.8 }}>
+  <li><code>active_addresses_daily</code></li>
+  <li><code>transaction_count</code></li>
+  <li><code>tokenholders</code></li>
+  <li><code>transaction_volume</code></li>
+  <li>Fallback: <code>turnover_rate</code></li>
+</ul>
+
+<Note>
+  A response may include many timestamps, but only one <code>metric_id</code> series
+  should appear in <code>data.metrics</code>.
+</Note>
+
+<h3 style={{ marginTop: 20 }}>How to use</h3>
+
+<Steps>
+  <Step title="Provide symbol">
+    Set <code>symbol</code> (required), for example <code>BTC</code> or <code>ETH</code>.
+  </Step>
+
+  <Step title="Read selected series">
+    Use <code>metrics[0].metric_id</code> to identify which metric was selected by coalesce logic.
+  </Step>
+</Steps>
+
+</div>

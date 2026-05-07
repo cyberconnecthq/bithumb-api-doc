@@ -1,0 +1,27 @@
+---
+title: Sell Recommendation
+description: AI sell recommendation ranking for Bithumb tokens ranked 151–200 by market cap.
+openapi: openapi.json GET /v1/market/ai-sell-recommendation
+---
+
+<div style={{ maxWidth: 760 }}>
+
+<h2 style={{ fontSize: "22px", marginBottom: 8 }}>Overview</h2>
+
+<p style={{ fontSize: 15, lineHeight: 1.8 }}>
+  Returns AI-driven sell recommendations for tokens ranked <strong>151–200 by market cap</strong> on Bithumb
+  with overall score <strong>&lt; 6.0</strong>, ranked by score (lowest first).
+  Each item includes asset info, rank, overall score, 6 category scores, a Korean title (max 20 characters), and a detailed analytical summary.
+</p>
+
+<p style={{ fontSize: 15, lineHeight: 1.8 }}>
+  Overall score = <code>Round(Average(6 individual metric scores), 1)</code>.
+</p>
+
+<h3 style={{ marginTop: 20 }}>Parameters</h3>
+
+<p style={{ fontSize: 15, lineHeight: 1.8 }}>
+  Only <code>date</code> (optional, YYYY-MM-DD). If omitted, returns the most recent data.
+</p>
+
+</div>

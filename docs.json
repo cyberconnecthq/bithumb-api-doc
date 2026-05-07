@@ -1,9 +1,8 @@
 {
     "theme": "mint",
     "name": "Surf AI API Documentation",
-
     "favicon": "/favicon.png",
-    "colors": { 
+    "colors": {
         "primary": "#000000",
         "light": "#4D9CFF",
         "dark": "#0050B4"
@@ -34,16 +33,19 @@
                         }
                     },
                     "examples": {
-                        "languages": ["curl", "python", "javascript"]
+                        "languages": [
+                            "curl",
+                            "python",
+                            "javascript"
+                        ]
                     }
                 }
             },
             {
-                "group": "Other APIs",
+                "group": "AI Report",
                 "pages": [
                     "ai-report",
-                    "ai-recommended-prompts",
-                    "ai-recommended-assets"
+                    "token-metrics"
                 ],
                 "api": {
                     "playground": {
@@ -53,7 +55,55 @@
                         }
                     },
                     "examples": {
-                        "languages": ["curl", "python", "javascript"]
+                        "languages": [
+                            "curl",
+                            "python",
+                            "javascript"
+                        ]
+                    }
+                }
+            },
+            {
+                "group": "Other APIs",
+                "pages": [
+                    "ai-recommended-prompts"
+                ],
+                "api": {
+                    "playground": {
+                        "display": "interactive",
+                        "validation": {
+                            "enabled": true
+                        }
+                    },
+                    "examples": {
+                        "languages": [
+                            "curl",
+                            "python",
+                            "javascript"
+                        ]
+                    }
+                }
+            },
+            {
+                "group": "AI Recommendation",
+                "pages": [
+                    "ai-recommended-assets",
+                    "ai-buy-recommendation",
+                    "ai-sell-recommendation"
+                ],
+                "api": {
+                    "playground": {
+                        "display": "interactive",
+                        "validation": {
+                            "enabled": true
+                        }
+                    },
+                    "examples": {
+                        "languages": [
+                            "curl",
+                            "python",
+                            "javascript"
+                        ]
                     }
                 }
             }

@@ -1,0 +1,27 @@
+---
+title: Buy Recommendation
+description: AI buy recommendation ranking for top 50 Bithumb tokens by market cap.
+openapi: openapi.json GET /v1/market/ai-buy-recommendation
+---
+
+<div style={{ maxWidth: 760 }}>
+
+<h2 style={{ fontSize: "22px", marginBottom: 8 }}>Overview</h2>
+
+<p style={{ fontSize: 15, lineHeight: 1.8 }}>
+  Returns AI-driven buy recommendations for tokens in the <strong>top 50 by market cap</strong> on Bithumb
+  with overall score <strong>&ge; 6.0</strong>, ranked by score (highest first).
+  Each item includes asset info, rank, overall score, 6 category scores, a Korean title (max 20 characters), and a detailed analytical summary.
+</p>
+
+<p style={{ fontSize: 15, lineHeight: 1.8 }}>
+  Overall score = <code>Round(Average(6 individual metric scores), 1)</code>.
+</p>
+
+<h3 style={{ marginTop: 20 }}>Parameters</h3>
+
+<p style={{ fontSize: 15, lineHeight: 1.8 }}>
+  Only <code>date</code> (optional, YYYY-MM-DD). If omitted, returns the most recent data.
+</p>
+
+</div>

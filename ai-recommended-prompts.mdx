@@ -1,6 +1,6 @@
 ---
 title: AI Recommended Prompts
-description: Context-aware analytical questions + structured responses for the Bithumb KRW market.
+description: Returns structured AI analysis for a given signal type in the Bithumb KRW market—useful for quickly understanding market conditions, flows, and narratives.
 openapi: openapi.json GET /v1/market/ai-recommended-prompts
 ---
 
@@ -9,39 +9,46 @@ openapi: openapi.json GET /v1/market/ai-recommended-prompts
 <h2 style={{ fontSize: "22px", marginBottom: 8 }}>Overview</h2>
 
 <p style={{ fontSize: 15, lineHeight: 1.8 }}>
-  The <strong>AI Recommended Prompts</strong> API generates context-aware analytical questions and structured
-  responses for the <strong>Bithumb KRW</strong> crypto market. It helps users quickly understand market conditions,
-  asset movements, capital flows, and emerging narratives.
+  The <strong>AI Recommended Prompts</strong> API returns structured AI analysis for the <strong>Bithumb KRW</strong> crypto
+  market for a given <code>type</code> (signal type). Use it to quickly understand market conditions, asset movements,
+  capital flows, and emerging narratives.
 </p>
 
-<Note>
-  Prompts include both <strong>fixed core questions</strong> and <strong>dynamically selected questions</strong> from a pool
-  that may change over time.
-</Note>
+<h3 style={{ marginTop: 20 }}>Available types</h3>
 
-<h3 style={{ marginTop: 20 }}>Prompt categories</h3>
+<p style={{ fontSize: 15, lineHeight: 1.8, marginBottom: 12 }}>
+  Below are the suggested questions for each <code>type</code>:
+</p>
 
-<ul style={{ fontSize: 15, lineHeight: 1.8 }}>
-  <li><strong>Market sentiment</strong>: overall mood & breadth</li>
-  <li><strong>Momentum</strong>: strongest movers and why</li>
-  <li><strong>Trending issues</strong>: what the market is talking about</li>
-  <li><strong>Directional picks</strong>: <code>go_up</code> / <code>go_down</code> (may require <code>ticker</code>)</li>
-  <li><strong>Narratives</strong>: KOL discussions / sector rotations</li>
+<ul style={{ fontSize: 15, lineHeight: 1.8, listStyle: "none", paddingLeft: 0 }}>
+  <li style={{ marginBottom: 12 }}><code>market_rise_fall_reason</code><br />English: Why is the market rising or falling?<br />Korean: 현재 시장의 상승/하락 이유는?</li>
+  <li style={{ marginBottom: 12 }}><code>bullish_assets</code><br />English: Which assets are on the rise?<br />Korean: 상승추세를 보이는 자산은?</li>
+  <li style={{ marginBottom: 12 }}><code>trending_issues</code><br />English: What are the trending issues in the crypto market?<br />Korean: 지금 시장에서 주목받는 이슈는?</li>
+  <li style={{ marginBottom: 12 }}><code>asset_price_surge</code><br />English: Why did the price of &#123;Asset Name&#125; go up?<br />Korean: &#123;가상자산명&#125; 상승 이유는?</li>
+  <li style={{ marginBottom: 12 }}><code>asset_price_decline</code><br />English: Why did the price of &#123;Asset Name&#125; go down?<br />Korean: &#123;가상자산명&#125; 하락 이유는?</li>
+  <li style={{ marginBottom: 12 }}><code>kol_themes</code><br />English: What themes are KOLs discussing recently?<br />Korean: 최근 KOL들의 주요 관심 주제는?</li>
+  <li style={{ marginBottom: 12 }}><code>kol_sectors</code><br />English: Which sectors are KOLs paying attention to?<br />Korean: 최근 KOL들이 주목하는 섹터는?</li>
+  <li style={{ marginBottom: 12 }}><code>positive_news_top5</code><br />English: What are the top 5 assets with positive news sentiment?<br />Korean: 뉴스 긍정 Top5 자산은?</li>
+  <li style={{ marginBottom: 12 }}><code>hottest_meme_coins</code><br />English: What is the hottest meme coin today?<br />Korean: 오늘 가장 핫한 &apos;밈코인&apos; 은?</li>
+  <li style={{ marginBottom: 12 }}><code>exchange_outflows</code><br />English: Which assets are experiencing large exchange outflows?<br />Korean: 거래소 대량 출금 자산은?</li>
+  <li style={{ marginBottom: 12 }}><code>stablecoin_inflows</code><br />English: What are the stablecoin inflow trends?<br />Korean: 스테이블코인 유입량은?</li>
+  <li style={{ marginBottom: 12 }}><code>sector_leaders</code><br />English: What are the leading assets by sector today?<br />Korean: 오늘 섹터별 대장 종목은?</li>
+  <li style={{ marginBottom: 12 }}><code>btc_etf_flow</code><br />English: What are the latest Bitcoin ETF inflows and outflows?<br />Korean: 비트코인 ETF 유출입 현황은?</li>
+  <li style={{ marginBottom: 12 }}><code>golden_cross</code><br />English: Which assets are approaching a golden cross?<br />Korean: 골든크로스 임박 자산은?</li>
+  <li style={{ marginBottom: 12 }}><code>sentiment_divergence</code><br />English: Which assets show sentiment divergence?<br />Korean: 심리 괴리 현상이 나타나는 자산은?</li>
+  <li style={{ marginBottom: 12 }}><code>top_active_chain</code><br />English: Which blockchain has the highest active users?<br />Korean: 활성 사용자 1위 체인은?</li>
+  <li style={{ marginBottom: 12 }}><code>undervalued_asset</code><br />English: Which asset appears undervalued in the &#123;sector&#125;?<br />Korean: &#123;sector&#125;에서 저평가된 자산은?</li>
 </ul>
 
 <h3 style={{ marginTop: 20 }}>How to use</h3>
 
 <Steps>
   <Step title="Choose a type">
-    Set <code>type</code> (required) as the prompt template key. Different types produce different structured outputs.
+    Set <code>type</code> (required) as the signal type. Different types produce different structured outputs.
   </Step>
 
   <Step title="Optional: choose a date">
     Provide <code>date</code> (YYYY-MM-DD) to view historical context. Default is the latest available snapshot.
-  </Step>
-
-  <Step title="Optional: provide ticker (only for some types)">
-    When <code>type</code> is <code>go_up</code> or <code>go_down</code>, you should pass <code>ticker</code>.
   </Step>
 </Steps>
 

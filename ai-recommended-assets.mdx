@@ -1,6 +1,6 @@
 ---
 title: AI Recommended Assets
-description: Data-driven ranking + AI interpretation for Bithumb KRW market assets.
+description: Data-driven ranking + AI interpretation for top-200 Bithumb KRW market assets.
 openapi: openapi.json GET /v1/market/ai-recommended-assets
 ---
 
@@ -9,25 +9,45 @@ openapi: openapi.json GET /v1/market/ai-recommended-assets
 <h2 style={{ fontSize: "22px", marginBottom: 8 }}>Overview</h2>
 
 <p style={{ fontSize: 15, lineHeight: 1.8 }}>
-  The <strong>AI Asset Recommendation</strong> API provides a data-driven ranking and evaluation of crypto assets
-  listed in the <strong>Bithumb KRW</strong> market. It combines market data with multi-dimensional scoring and
-  AI-generated interpretation.
+  The <strong>AI Asset Recommendation</strong> API delivers ranked insights for crypto assets listed in the
+  <strong>Bithumb KRW</strong> market. It returns the <strong>top 200 tokens by market cap</strong> by default,
+  combining multi-dimensional scoring with AI-generated interpretation.
+  The response shape depends on the <code>type</code> you request.
 </p>
 
 <Note>
-  This endpoint is labeled <strong>Mock</strong> in the spec. Treat outputs as informational snapshots.
+  This endpoint returns a point-in-time snapshot. If <code>date</code> is omitted, the most recent snapshot is returned.
 </Note>
 
-<h3 style={{ marginTop: 20 }}>Two core components</h3>
+<h3 style={{ marginTop: 20 }}>Variants</h3>
+
+<p style={{ fontSize: 15, lineHeight: 1.8 }}>
+  Two additional endpoints return subsets of the same data:
+</p>
+
+<ul style={{ fontSize: 15, lineHeight: 1.8 }}>
+  <li><code>/v1/market/ai-buy-recommendation</code> — buy recommendation (rank 1–50, score &ge; 6.0, highest first)</li>
+  <li><code>/v1/market/ai-sell-recommendation</code> — sell recommendation (rank 151–200, score &lt; 6.0, lowest first)</li>
+</ul>
+
+<h3 style={{ marginTop: 20 }}>Response modes (type)</h3>
 
 <ul style={{ fontSize: 15, lineHeight: 1.8 }}>
   <li>
-    <strong>Recommendation List</strong>: ranked assets based on a composite <code>Total Score</code> (0–10),
-    computed as the rounded average of five category scores.
+    <strong>score_ranking</strong>: asset info + <code>total_score</code>, <code>score_by_category</code>,
+    <code>overall_rank</code>, <code>ranking_by_category</code>, <code>opinion</code>, and <code>interpretation</code>.
   </li>
   <li>
-    <strong>Recommendation Details</strong>: in-depth evaluation for each asset, including score interpretation,
-    category breakdown, price context, and social sentiment distribution.
+    <strong>summary</strong>: asset info + <code>total_score</code>, <code>score_by_category</code>,
+    <code>title</code> (concise Korean label, max 20 characters), and <code>summary</code> (detailed multi-line markdown analysis interpreting scores).
+  </li>
+  <li>
+    <strong>comprehensive_evaluation</strong>: asset info + <code>total_score</code>, <code>score_by_category</code>,
+    <code>overall_rank</code>, <code>opinion</code>, and <code>interpretation</code>.
+  </li>
+  <li>
+    <strong>sentiment_trend</strong>: asset info + <code>bullish</code>, <code>bearish</code> (integer percentages, 0–100, sum = 100),
+    and <code>sentiment_label</code> (Korean label derived from bullish ratio).
   </li>
 </ul>
 
@@ -35,56 +55,44 @@ openapi: openapi.json GET /v1/market/ai-recommended-assets
 
 <div style={{ fontSize: 15, lineHeight: 1.8 }}>
   <p style={{ marginBottom: 8 }}>
-    Total Score is derived from five categories (each 0–10):
+    Total Score is provided together with six category scores (each 0-10):
   </p>
 
   <ul>
-    <li><strong>Market Sentiment</strong></li>
-    <li><strong>Price Stability</strong></li>
-    <li><strong>Search Trend</strong></li>
-    <li><strong>Trading Activity</strong></li>
     <li><strong>Upside Energy</strong></li>
+    <li><strong>Trading Activity</strong></li>
+    <li><strong>Search Trend</strong></li>
+    <li><strong>Price Stability</strong></li>
+    <li><strong>Market Sentiment</strong></li>
+    <li><strong>Price Resilience</strong></li>
   </ul>
-
-  <p style={{ marginTop: 10 }}>
-    The response includes both <code>score_by_category</code> and <code>score_interpretation</code>.
-  </p>
 </div>
-
-<Note>
-  <strong>Score format — wire bytes vs. viewer display.</strong> Every
-  score field is a <code>number</code> emitted with one decimal place
-  on the wire, including the trailing zero for whole values
-  (<code>"trading_activity": 10.0</code>). The playground response
-  viewer above — like Postman, Swagger UI, browser DevTools, and most
-  other JSON tools — parses the response through JavaScript first, and
-  <code>JSON.parse("10.0").toString()</code> is <code>"10"</code>, so
-  the trailing zero is dropped in display. To verify the actual wire
-  format, run the cURL snippet below directly in a terminal. To render
-  scores with one decimal in your application, format on display, for
-  example <code>value.toFixed(1)</code> in JavaScript.
-</Note>
 
 <h3 style={{ marginTop: 20 }}>How to use</h3>
 
 <Steps>
-  <Step title="Provide asset candidates">
-    Send an array of assets with <code>ticker</code> and <code>current</code> price (required per item). You may include
-    <code>change_rate</code> when available.
+  <Step title="Call without tickers (default)">
+    Omit <code>tickers</code> to receive data for <strong>all top-200 tokens</strong> sorted by score.
   </Step>
 
-  <Step title="Optional: attach timestamp">
-    Include <code>timestamp</code> to annotate the snapshot timing (if your pipeline tracks it).
+  <Step title="Or filter by specific tickers">
+    Pass <code>tickers</code> as a comma-separated list (e.g. <code>BTC,ETH,SOL</code>).
+    Only tokens within the market cap range of this endpoint are returned.
   </Step>
 
-  <Step title="Read ranking + evaluation">
-    Use <code>ranking.overall_rank</code> and <code>score.total</code> to sort, then display <code>ai_evaluation.summary</code> /
-    <code>ai_evaluation.opinion</code> for the narrative layer.
+  <Step title="Choose a response type">
+    Set <code>type</code> (required) to one of: <code>score_ranking</code>, <code>summary</code>,
+    <code>comprehensive_evaluation</code>, <code>sentiment_trend</code>.
+  </Step>
+
+  <Step title="Optional: request a historical snapshot">
+    Provide <code>date</code> (YYYY-MM-DD). The backend treats it as KST 00:00 for that day.
   </Step>
 </Steps>
 
 <Warning>
-  If certain data is unavailable or not applicable, corresponding fields may be <code>null</code> or omitted.
+  Unknown or out-of-range tickers are omitted. If certain data is unavailable, corresponding fields may be
+  <code>null</code> or omitted.
 </Warning>
 
 </div>
