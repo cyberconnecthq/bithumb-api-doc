@@ -1,7 +1,7 @@
 ---
 title: Buy Recommendation
-description: AI buy recommendation ranking for top 50 Bithumb tokens by market cap.
-openapi: openapi.json GET /v1/market/ai-buy-recommendation
+description: Buy view of the AI Recommendation snapshot — assets with `total_score ≥ 6.0`, sorted high-to-low, capped at 50 entries.
+api: 'GET https://api.asksurf.ai/surf-ai/v1/market/ai-buy-recommendation'
 ---
 
 <div style={{ maxWidth: 760 }}>
@@ -9,19 +9,170 @@ openapi: openapi.json GET /v1/market/ai-buy-recommendation
 <h2 style={{ fontSize: "22px", marginBottom: 8 }}>Overview</h2>
 
 <p style={{ fontSize: 15, lineHeight: 1.8 }}>
-  Returns AI-driven buy recommendations for tokens in the <strong>top 50 by market cap</strong> on Bithumb
-  with overall score <strong>&ge; 6.0</strong>, ranked by score (highest first).
-  Each item includes asset info, rank, overall score, 6 category scores, a Korean title (max 20 characters), and a detailed analytical summary.
+  The <strong>Buy Recommendation</strong> API is one of three views over the same hourly AI Recommendation
+  batch. It returns assets in the Bithumb-KRW Top-200 universe with <code>total_score &ge; 6.0</code>, sorted
+  by score descending, with a hard cap of <strong>50 entries</strong>.
 </p>
 
-<p style={{ fontSize: 15, lineHeight: 1.8 }}>
-  Overall score = <code>Round(Average(6 individual metric scores), 1)</code>.
-</p>
+<Note>
+  When fewer than 50 assets cross the threshold, fewer items are returned. **No padding** — the API never
+  includes neutrals to fill to 50.
+</Note>
 
-<h3 style={{ marginTop: 20 }}>Parameters</h3>
+<Warning>
+  All score fields render with **exactly one decimal place** including trailing zero (`7.0`, `10.0`) — never
+  bare integers. The Mintlify viewer may drop the trailing `.0` cosmetically; the wire bytes are correct.
+</Warning>
 
-<p style={{ fontSize: 15, lineHeight: 1.8 }}>
-  Only <code>date</code> (optional, YYYY-MM-DD). If omitted, returns the most recent data.
-</p>
+<h3 style={{ marginTop: 20 }}>Query parameters</h3>
+
+<ParamField query="date" type="string">
+  Snapshot date in `YYYY-MM-DD` (KST). When omitted, the most recent snapshot is returned.
+</ParamField>
+
+<h3 style={{ marginTop: 20 }}>Cadence & freshness</h3>
+
+<CardGroup cols={2}>
+  <Card title="Refresh" icon="clock">
+    Hourly at KST `:00`. Promotion completes by `:50` of the previous hour.
+  </Card>
+  <Card title="Same batch as Score Ranking" icon="layer-group">
+    Buy / Sell / Score Ranking views share `generated_at`. The boundary at `6.0` is inclusive (test:
+    `TestBuyRecommendation_ScoreBoundaryIncludesAtSix`).
+  </Card>
+</CardGroup>
+
+---
+
+<h2 style={{ fontSize: "22px", marginBottom: 8 }}>Response Attributes</h2>
+
+<ResponseField name="generated_at" type="string" required>
+  Snapshot wall-clock in **Asia/Seoul (KST)**. Wire format: `YYYY-MM-DD HH:MM:SS`.
+</ResponseField>
+
+<ResponseField name="uid" type="string" required>
+  Batch identifier. Format: `buy_recommendation_YYYYMMDD_HHMM` (KST), `HHMM` aligned to the hourly cadence
+  (`HH00`).
+</ResponseField>
+
+<ResponseField name="assets" type="array of objects" required>
+  Up to 50 entries, sorted by `total_score` descending. Each item:
+  <Expandable title="properties">
+    <ResponseField name="symbol" type="string" required>
+      Bithumb exchange symbol (uppercase).
+    </ResponseField>
+    <ResponseField name="name" type="string" required>
+      Korean asset name.
+    </ResponseField>
+    <ResponseField name="image_url" type="string" required>
+      Asset icon URL.
+    </ResponseField>
+    <ResponseField name="uid" type="string" required>
+      Per-asset document ID. Format: `buy_recommendation_<SYMBOL>_YYYYMMDD_HHMM` (KST).
+    </ResponseField>
+    <ResponseField name="rank" type="integer" required>
+      Position within this view, `1`-based. `rank = 1` is the highest-scoring asset returned by this endpoint.
+    </ResponseField>
+    <ResponseField name="total_score" type="number" required>
+      Overall score `6.0`–`10.0` (filter: `≥ 6.0`), one decimal place.
+    </ResponseField>
+    <ResponseField name="score_by_category" type="object" required>
+      Object with the six number keys `upside_energy / trading_activity / search_trend / price_stability /
+      market_sentiment / price_resilience`. Each `0.0`–`10.0`, one decimal place. Korean labels and
+      definitions match the [AI Recommended Assets scoring model](/ai-recommended-assets#the-six-metric-scoring-model).
+    </ResponseField>
+    <ResponseField name="title" type="string" required>
+      Korean headline derived from `summary` body. Max 20 Korean characters.
+    </ResponseField>
+    <ResponseField name="summary" type="string" required>
+      Multi-bullet Korean markdown synthesizing the 6 metric scores plus sentiment trend.
+      Each bullet uses `\n- 헤드라인: 본문` form.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+---
+
+<h2 style={{ fontSize: "22px", marginBottom: 8 }}>Errors</h2>
+
+| Status | Code | When |
+|---|---|---|
+| 404 | `NOT_FOUND` | No snapshot exists for `date`. |
+| 500 | `INTERNAL_ERROR` | Unexpected upstream failure. Retry with backoff. |
 
 </div>
+
+<RequestExample>
+
+```bash cURL
+curl --request GET \
+  --url "https://api.asksurf.ai/surf-ai/v1/market/ai-buy-recommendation" \
+  --header "Authorization: <api-key>"
+```
+
+```python Python
+import requests
+
+response = requests.get(
+    "https://api.asksurf.ai/surf-ai/v1/market/ai-buy-recommendation",
+    headers={"Authorization": "<api-key>"},
+)
+recommendations = response.json()
+```
+
+```javascript JavaScript
+const response = await fetch(
+  "https://api.asksurf.ai/surf-ai/v1/market/ai-buy-recommendation",
+  { headers: { Authorization: "<api-key>" } },
+);
+const recommendations = await response.json();
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{
+  "generated_at": "2026-05-07 17:00:00",
+  "uid": "buy_recommendation_20260507_1700",
+  "assets": [
+    {
+      "rank": 1,
+      "symbol": "BTC",
+      "name": "비트코인",
+      "image_url": "https://cdn.asksurf.ai/icons/btc.png",
+      "uid": "buy_recommendation_BTC_20260507_1700",
+      "total_score": 8.4,
+      "score_by_category": {
+        "upside_energy": 7.8,
+        "trading_activity": 9.1,
+        "search_trend": 8.7,
+        "price_stability": 8.0,
+        "market_sentiment": 8.2,
+        "price_resilience": 8.6
+      },
+      "title": "관심 집중 강세장, 변동성 주의",
+      "summary": "- **상승에너지**: 24시간 +2.4% 상승하며 단기 매수세 유입 확인됨\n- **거래활성도**: 거래대금 58조 원으로 시장 1위 유지\n- **시장심리**: 긍정 키워드 비중 68%로 우호적 분위기"
+    }
+  ]
+}
+```
+
+```json 404 — no snapshot for date
+{
+  "success": false,
+  "error_code": "NOT_FOUND",
+  "message": "no snapshot found for date 2025-12-31"
+}
+```
+
+```json 500 — internal error
+{
+  "success": false,
+  "error_code": "INTERNAL_ERROR",
+  "message": "unexpected upstream failure; retry with backoff"
+}
+```
+
+</ResponseExample>

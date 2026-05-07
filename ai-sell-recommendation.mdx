@@ -1,7 +1,7 @@
 ---
 title: Sell Recommendation
-description: AI sell recommendation ranking for Bithumb tokens ranked 151–200 by market cap.
-openapi: openapi.json GET /v1/market/ai-sell-recommendation
+description: Sell view of the AI Recommendation snapshot — assets with `total_score < 4.0`, sorted low-to-high, capped at 50 entries.
+api: 'GET https://api.asksurf.ai/surf-ai/v1/market/ai-sell-recommendation'
 ---
 
 <div style={{ maxWidth: 760 }}>
@@ -9,19 +9,169 @@ openapi: openapi.json GET /v1/market/ai-sell-recommendation
 <h2 style={{ fontSize: "22px", marginBottom: 8 }}>Overview</h2>
 
 <p style={{ fontSize: 15, lineHeight: 1.8 }}>
-  Returns AI-driven sell recommendations for tokens ranked <strong>151–200 by market cap</strong> on Bithumb
-  with overall score <strong>&lt; 6.0</strong>, ranked by score (lowest first).
-  Each item includes asset info, rank, overall score, 6 category scores, a Korean title (max 20 characters), and a detailed analytical summary.
+  The <strong>Sell Recommendation</strong> API is one of three views over the same hourly AI Recommendation
+  batch. It returns assets in the Bithumb-KRW Top-200 universe with <code>total_score &lt; 4.0</code>,
+  sorted by score ascending (weakest first), with a hard cap of <strong>50 entries</strong>.
 </p>
 
-<p style={{ fontSize: 15, lineHeight: 1.8 }}>
-  Overall score = <code>Round(Average(6 individual metric scores), 1)</code>.
-</p>
+<Note>
+  The threshold is **`< 4.0`**, not the SRS PDF's "below 6.0" wording. This was overridden by QA reviewer
+  request (`요구사항 변경(매도 추천 시 중립제외)`) — neutrals (4.0–5.9) are explicitly excluded from
+  the sell list. Boundary lock: `TestSellRecommendation_ScoreBoundaryExcludesAtFour`.
+</Note>
 
-<h3 style={{ marginTop: 20 }}>Parameters</h3>
+<Warning>
+  All score fields render with **exactly one decimal place** including trailing zero (`3.0`, `2.5`) — never
+  bare integers. The Mintlify viewer may drop the trailing `.0` cosmetically; the wire bytes are correct.
+</Warning>
 
-<p style={{ fontSize: 15, lineHeight: 1.8 }}>
-  Only <code>date</code> (optional, YYYY-MM-DD). If omitted, returns the most recent data.
-</p>
+<h3 style={{ marginTop: 20 }}>Query parameters</h3>
+
+<ParamField query="date" type="string">
+  Snapshot date in `YYYY-MM-DD` (KST). When omitted, the most recent snapshot is returned.
+</ParamField>
+
+<h3 style={{ marginTop: 20 }}>Cadence & freshness</h3>
+
+<CardGroup cols={2}>
+  <Card title="Refresh" icon="clock">
+    Hourly at KST `:00`. Promotion completes by `:50` of the previous hour.
+  </Card>
+  <Card title="No padding" icon="filter">
+    When fewer than 50 assets fall below `4.0`, fewer items are returned. Neutrals are never used to fill.
+  </Card>
+</CardGroup>
+
+---
+
+<h2 style={{ fontSize: "22px", marginBottom: 8 }}>Response Attributes</h2>
+
+<ResponseField name="generated_at" type="string" required>
+  Snapshot wall-clock in **Asia/Seoul (KST)**. Wire format: `YYYY-MM-DD HH:MM:SS`.
+</ResponseField>
+
+<ResponseField name="uid" type="string" required>
+  Batch identifier. Format: `sell_recommendation_YYYYMMDD_HHMM` (KST), `HHMM` aligned to the hourly cadence.
+</ResponseField>
+
+<ResponseField name="assets" type="array of objects" required>
+  Up to 50 entries, sorted by `total_score` ascending. Each item:
+  <Expandable title="properties">
+    <ResponseField name="symbol" type="string" required>
+      Bithumb exchange symbol (uppercase).
+    </ResponseField>
+    <ResponseField name="name" type="string" required>
+      Korean asset name.
+    </ResponseField>
+    <ResponseField name="image_url" type="string" required>
+      Asset icon URL.
+    </ResponseField>
+    <ResponseField name="uid" type="string" required>
+      Per-asset document ID. Format: `sell_recommendation_<SYMBOL>_YYYYMMDD_HHMM` (KST).
+    </ResponseField>
+    <ResponseField name="rank" type="integer" required>
+      Position within this view, `1`-based. `rank = 1` is the lowest-scoring (weakest) asset.
+    </ResponseField>
+    <ResponseField name="total_score" type="number" required>
+      Overall score `0.0`–`3.9` (filter: `< 4.0`), one decimal place.
+    </ResponseField>
+    <ResponseField name="score_by_category" type="object" required>
+      Object with the six number keys `upside_energy / trading_activity / search_trend / price_stability /
+      market_sentiment / price_resilience`. Each `0.0`–`10.0`, one decimal place. Korean labels and
+      definitions match the [AI Recommended Assets scoring model](/ai-recommended-assets#the-six-metric-scoring-model).
+    </ResponseField>
+    <ResponseField name="title" type="string" required>
+      Korean headline derived from `summary` body. Max 20 Korean characters.
+    </ResponseField>
+    <ResponseField name="summary" type="string" required>
+      Multi-bullet Korean markdown synthesizing the 6 metric scores plus sentiment trend.
+      Each bullet uses `\n- 헤드라인: 본문` form.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+---
+
+<h2 style={{ fontSize: "22px", marginBottom: 8 }}>Errors</h2>
+
+| Status | Code | When |
+|---|---|---|
+| 404 | `NOT_FOUND` | No snapshot exists for `date`. |
+| 500 | `INTERNAL_ERROR` | Unexpected upstream failure. Retry with backoff. |
 
 </div>
+
+<RequestExample>
+
+```bash cURL
+curl --request GET \
+  --url "https://api.asksurf.ai/surf-ai/v1/market/ai-sell-recommendation" \
+  --header "Authorization: <api-key>"
+```
+
+```python Python
+import requests
+
+response = requests.get(
+    "https://api.asksurf.ai/surf-ai/v1/market/ai-sell-recommendation",
+    headers={"Authorization": "<api-key>"},
+)
+recommendations = response.json()
+```
+
+```javascript JavaScript
+const response = await fetch(
+  "https://api.asksurf.ai/surf-ai/v1/market/ai-sell-recommendation",
+  { headers: { Authorization: "<api-key>" } },
+);
+const recommendations = await response.json();
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{
+  "generated_at": "2026-05-07 17:00:00",
+  "uid": "sell_recommendation_20260507_1700",
+  "assets": [
+    {
+      "rank": 1,
+      "symbol": "EXAMPLE",
+      "name": "예시코인",
+      "image_url": "https://cdn.asksurf.ai/icons/example.png",
+      "uid": "sell_recommendation_EXAMPLE_20260507_1700",
+      "total_score": 2.3,
+      "score_by_category": {
+        "upside_energy": 1.5,
+        "trading_activity": 2.8,
+        "search_trend": 2.1,
+        "price_stability": 3.0,
+        "market_sentiment": 2.4,
+        "price_resilience": 2.0
+      },
+      "title": "지속적 약세, 거래량 위축 우려",
+      "summary": "- **상승에너지**: 7일 -8.2% 하락하며 매수세 부재가 두드러짐\n- **거래활성도**: 거래대금 30일 평균 0.4배로 유동성 위축\n- **시장심리**: 부정 키워드 비중 62%로 약세 분위기 지속"
+    }
+  ]
+}
+```
+
+```json 404 — no snapshot for date
+{
+  "success": false,
+  "error_code": "NOT_FOUND",
+  "message": "no snapshot found for date 2025-12-31"
+}
+```
+
+```json 500 — internal error
+{
+  "success": false,
+  "error_code": "INTERNAL_ERROR",
+  "message": "unexpected upstream failure; retry with backoff"
+}
+```
+
+</ResponseExample>

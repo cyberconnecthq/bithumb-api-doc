@@ -1,7 +1,7 @@
 ---
 title: Market Sentiment
-description: Market sentiment snapshot (date param reserved; currently ignored).
-openapi: openapi.json GET /v1/market/sentiment
+description: Market-wide sentiment snapshot — Fear & Greed index, Up/Flat/Down breadth, and gainer count vs previous day.
+api: 'GET https://api.asksurf.ai/surf-ai/v1/market/sentiment'
 ---
 
 <div style={{ maxWidth: 760 }}>
@@ -9,29 +9,162 @@ openapi: openapi.json GET /v1/market/sentiment
 <h2 style={{ fontSize: "22px", marginBottom: 8 }}>Overview</h2>
 
 <p style={{ fontSize: 15, lineHeight: 1.8 }}>
-  The <strong>Market Sentiment</strong> API returns a snapshot of overall market sentiment signals.
+  The <strong>Market Sentiment</strong> API returns a snapshot of overall sentiment signals for the
+  Bithumb-KRW market: a Fear &amp; Greed index, breadth counts (Up / Flat / Down assets), and the
+  number of assets rising versus the previous day.
 </p>
 
 <Note>
-  The optional <code>date</code> query parameter is <strong>reserved</strong> and is currently ignored.
+  Powered by the daily Market Report pipeline (refresh **18:00 KST**, promotion completes by **17:50 KST**).
+  Used by the Bithumb FE as a top-of-page market-pulse indicator.
 </Note>
 
-<h3 style={{ marginTop: 20 }}>How to use</h3>
+<h3 style={{ marginTop: 20 }}>Query parameters</h3>
 
-<Steps>
-  <Step title="Fetch the latest snapshot">
-    Call the endpoint without parameters to get the most recent sentiment snapshot.
-  </Step>
+<ParamField query="date" type="string">
+  Snapshot date in `YYYY-MM-DD` (KST). When omitted, the most recent snapshot is returned.
+</ParamField>
 
-  <Step title="Use as a high-level indicator">
-    Use the response as a dashboard indicator, or combine it with your own breadth/flow metrics for scoring.
-  </Step>
-</Steps>
+<ParamField query="raw" type="boolean" default="false">
+  When `true`, returns the **pre-polish** raw model output. Used by Bithumb QA; not for production traffic.
+</ParamField>
 
-<Warning>
-  Outputs are for informational purposes only and should not be interpreted as financial advice.
-</Warning>
+<h3 style={{ marginTop: 20 }}>Fear & Greed banding</h3>
+
+| `fear_greed_index` | Korean band | English |
+|---|---|---|
+| 0 – 24 | 극단적 공포 | Extreme Fear |
+| 25 – 44 | 공포 | Fear |
+| 45 – 55 | 중립 | Neutral |
+| 56 – 75 | 탐욕 | Greed |
+| 76 – 100 | 극단적 탐욕 | Extreme Greed |
+
+The `fear_greed_interpretation` string is a Korean prose interpretation derived from the index value
+(e.g. *"투자 심리가 다소 위축된 상태로, 신중한 접근이 필요한 구간으로 판단됨."*).
+
+---
+
+<h2 style={{ fontSize: "22px", marginBottom: 8 }}>Response Attributes</h2>
+
+<ResponseField name="report_time" type="string" required>
+  Reference time the snapshot represents in **Asia/Seoul (KST)**. Wire format: `YYYY-MM-DD HH:MM:SS`.
+  For sample-data validation runs the canonical reference is `YYYY-MM-DD 07:50`.
+</ResponseField>
+
+<ResponseField name="publish_time" type="string" required>
+  Wall-clock when this snapshot was promoted to the public read tables (KST, `YYYY-MM-DD HH:MM:SS`).
+</ResponseField>
+
+<ResponseField name="fear_greed_index" type="integer" required>
+  Fear & Greed score. Range: `0`–`100` (higher = more greed).
+</ResponseField>
+
+<ResponseField name="fear_greed_interpretation" type="string" required>
+  Korean prose interpretation of the index, ~1 sentence. 음/슴체 sentence ending.
+</ResponseField>
+
+<ResponseField name="rising_assets_vs_previous_day" type="integer" required>
+  Count of Bithumb-KRW assets whose 24-hour change is positive compared to the prior day's snapshot.
+  Non-negative; bounded by the size of the Bithumb-KRW universe.
+</ResponseField>
+
+<ResponseField name="market_price_fluctuations" type="array of objects" required>
+  Breadth counts across the entire Bithumb-KRW market — typically 3 entries (Up / Flat / Down).
+  <Expandable title="item properties">
+    <ResponseField name="type" type="string" required>
+      One of:
+      | Value | Meaning |
+      |---|---|
+      | `UP` | Asset's 24-hour change is positive |
+      | `FLAT` | Change is zero / within rounding |
+      | `DOWN` | Change is negative |
+    </ResponseField>
+    <ResponseField name="num" type="integer" required>
+      Number of assets in this bucket. Sum across all three entries equals the size of the Bithumb-KRW
+      market at `report_time`.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+---
+
+<h2 style={{ fontSize: "22px", marginBottom: 8 }}>Errors</h2>
+
+| Status | Code | When |
+|---|---|---|
+| 400 | `INVALID_PARAMS` | `date` is not `YYYY-MM-DD`. |
+| 404 | `NOT_FOUND` | No snapshot exists for `date`. |
+| 500 | `INTERNAL_ERROR` | Unexpected upstream failure. |
 
 </div>
 
+<RequestExample>
 
+```bash cURL
+curl --request GET \
+  --url "https://api.asksurf.ai/surf-ai/v1/market/sentiment" \
+  --header "Authorization: <api-key>"
+```
+
+```python Python
+import requests
+
+response = requests.get(
+    "https://api.asksurf.ai/surf-ai/v1/market/sentiment",
+    headers={"Authorization": "<api-key>"},
+)
+sentiment = response.json()
+```
+
+```javascript JavaScript
+const response = await fetch(
+  "https://api.asksurf.ai/surf-ai/v1/market/sentiment",
+  { headers: { Authorization: "<api-key>" } },
+);
+const sentiment = await response.json();
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{
+  "report_time": "2026-05-07 07:50:00",
+  "publish_time": "2026-05-07 07:48:30",
+  "fear_greed_index": 62,
+  "fear_greed_interpretation": "투자 심리가 점진적 회복 국면에 진입하며 단기 매수세가 우세한 것으로 판단됨.",
+  "rising_assets_vs_previous_day": 142,
+  "market_price_fluctuations": [
+    { "type": "UP", "num": 142 },
+    { "type": "FLAT", "num": 18 },
+    { "type": "DOWN", "num": 89 }
+  ]
+}
+```
+
+```json 400 — invalid date
+{
+  "success": false,
+  "error_code": "INVALID_PARAMS",
+  "message": "date must be YYYY-MM-DD"
+}
+```
+
+```json 404 — no snapshot for date
+{
+  "success": false,
+  "error_code": "NOT_FOUND",
+  "message": "no snapshot found for date 2025-12-31"
+}
+```
+
+```json 500 — internal error
+{
+  "success": false,
+  "error_code": "INTERNAL_ERROR",
+  "message": "unexpected upstream failure; retry with backoff"
+}
+```
+
+</ResponseExample>
