@@ -1,6 +1,6 @@
 ---
-title: Rise Tokens
-description: Rise token news list for a given date (optional).
+title: Today’s Rising Coin
+description: Rising coin news list for a given date (optional).
 openapi: openapi.json GET /v1/market/rise-tokens
 ---
 
@@ -25,8 +25,8 @@ openapi: openapi.json GET /v1/market/rise-tokens
     Provide <code>date</code> (YYYY-MM-DD). If omitted, the latest available snapshot is returned.
   </Step>
 
-  <Step title="Build movers UX">
-    Use the returned items to power a “top movers” module and enrich it with price/volume context from your own data.
+  <Step title="Return Top Rising Coins and Rationale">
+    Use the returned top rising coins and rationales behind each coin to analyze price change directions
   </Step>
 </Steps>
 
