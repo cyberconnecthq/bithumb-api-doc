@@ -7,6 +7,11 @@
         "light": "#4D9CFF",
         "dark": "#0050B4"
     },
+    "api": {
+        "playground": {
+            "proxy": false
+        }
+    },
     "navigation": {
         "groups": [
             {
@@ -28,7 +33,6 @@
                 "api": {
                     "playground": {
                         "display": "interactive",
-                        "proxy": false,
                         "validation": {
                             "enabled": true
                         }
@@ -51,7 +55,6 @@
                 "api": {
                     "playground": {
                         "display": "interactive",
-                        "proxy": false,
                         "validation": {
                             "enabled": true
                         }
@@ -73,7 +76,6 @@
                 "api": {
                     "playground": {
                         "display": "interactive",
-                        "proxy": false,
                         "validation": {
                             "enabled": true
                         }
@@ -97,7 +99,6 @@
                 "api": {
                     "playground": {
                         "display": "interactive",
-                        "proxy": false,
                         "validation": {
                             "enabled": true
                         }
