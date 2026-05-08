@@ -46,6 +46,8 @@ The `fear_greed_interpretation` string is a Korean prose interpretation derived 
 
 <h2 style={{ fontSize: "22px", marginBottom: 8 }}>Response Attributes</h2>
 
+<h3 style={{ marginTop: 24, marginBottom: 8 }}>Snapshot timing</h3>
+
 <ResponseField name="report_time" type="string" required>
   Reference time the snapshot represents in **Asia/Seoul (KST)**. Wire format: `YYYY-MM-DD HH:MM:SS`.
   For sample-data validation runs the canonical reference is `YYYY-MM-DD 07:50`.
@@ -55,6 +57,8 @@ The `fear_greed_interpretation` string is a Korean prose interpretation derived 
   Wall-clock when this snapshot was promoted to the public read tables (KST, `YYYY-MM-DD HH:MM:SS`).
 </ResponseField>
 
+<h3 style={{ marginTop: 24, marginBottom: 8 }}>Sentiment indicators</h3>
+
 <ResponseField name="fear_greed_index" type="integer" required>
   Fear & Greed score. Range: `0`–`100` (higher = more greed).
 </ResponseField>
@@ -62,6 +66,8 @@ The `fear_greed_interpretation` string is a Korean prose interpretation derived 
 <ResponseField name="fear_greed_interpretation" type="string" required>
   Korean prose interpretation of the index, ~1 sentence. 음/슴체 sentence ending.
 </ResponseField>
+
+<h3 style={{ marginTop: 24, marginBottom: 8 }}>Market breadth</h3>
 
 <ResponseField name="rising_assets_vs_previous_day" type="integer" required>
   Count of Bithumb-KRW assets whose 24-hour change is positive compared to the prior day's snapshot.
@@ -92,9 +98,9 @@ The `fear_greed_interpretation` string is a Korean prose interpretation derived 
 
 | Status | Code | When |
 |---|---|---|
-| 400 | `INVALID_PARAMS` | `date` is not `YYYY-MM-DD`. |
-| 404 | `NOT_FOUND` | No snapshot exists for `date`. |
-| 500 | `INTERNAL_ERROR` | Unexpected upstream failure. |
+| <span style={{color:"#d97706",fontWeight:600}}>● 400</span> | `INVALID_PARAMS` | `date` is not `YYYY-MM-DD`. |
+| <span style={{color:"#d97706",fontWeight:600}}>● 404</span> | `NOT_FOUND` | No snapshot exists for `date`. |
+| <span style={{color:"#dc2626",fontWeight:600}}>● 500</span> | `INTERNAL_ERROR` | Unexpected upstream failure. |
 
 </div>
 

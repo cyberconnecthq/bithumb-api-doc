@@ -73,6 +73,8 @@ shown in the table.
 
 The shape is the same across all 17 `type` values. Sub-section content varies by question.
 
+<h3 style={{ marginTop: 24, marginBottom: 8 }}>Identity & metadata</h3>
+
 <ResponseField name="report_time" type="string" required>
   Snapshot wall-clock in **Asia/Seoul (KST)**. Wire format: `YYYY-MM-DD HH:MM:SS`.
   Aliased as `generated_at` in some surfaces.
@@ -83,6 +85,8 @@ The shape is the same across all 17 `type` values. Sub-section content varies by
   (`HHMM ∈ {0000, 0030, 0100, ...}`).
 </ResponseField>
 
+<h3 style={{ marginTop: 24, marginBottom: 8 }}>Headline content</h3>
+
 <ResponseField name="title" type="string" required>
   Canonical Korean title from the catalogue above (or template-rendered for Q4/Q5). Never
   LLM-generated.
@@ -92,10 +96,14 @@ The shape is the same across all 17 `type` values. Sub-section content varies by
   Korean prose, multi-bullet markdown. ≤4–5 lines. Bullets separated by `\n- ` for FE-side splitting.
 </ResponseField>
 
+<h3 style={{ marginTop: 24, marginBottom: 8 }}>Detailed analysis</h3>
+
 <ResponseField name="detailed_analysis" type="object" required>
   Structured Korean analysis content. The concrete key shape varies per question type — refer to the live
   response for the canonical fields returned by your `type`.
 </ResponseField>
+
+<h3 style={{ marginTop: 24, marginBottom: 8 }}>Conclusion</h3>
 
 <ResponseField name="conclusion_neutral_opinion" type="string" required>
   **Neutral** Korean synthesis combining positive and cautionary signals.
@@ -108,6 +116,8 @@ The shape is the same across all 17 `type` values. Sub-section content varies by
 <ResponseField name="conclusion_cautionary_factors" type="array of strings" required>
   Korean bullets — **cautionary evidence only**. No positive phrasing leaks.
 </ResponseField>
+
+<h3 style={{ marginTop: 24, marginBottom: 8 }}>Common metadata blocks</h3>
 
 <ResponseField name="feedback" type="object">
   Common feedback metadata block (FE-rendered).
@@ -123,9 +133,9 @@ The shape is the same across all 17 `type` values. Sub-section content varies by
 
 | Status | Code | When |
 |---|---|---|
-| 400 | `INVALID_PARAMS` | `type` missing or not one of the 17 catalogue keys; `date` malformed. |
-| 404 | `NOT_FOUND` | No snapshot exists for the requested `type` + `date` combination. |
-| 500 | `INTERNAL_ERROR` | Unexpected upstream failure. |
+| <span style={{color:"#d97706",fontWeight:600}}>● 400</span> | `INVALID_PARAMS` | `type` missing or not one of the 17 catalogue keys; `date` malformed. |
+| <span style={{color:"#d97706",fontWeight:600}}>● 404</span> | `NOT_FOUND` | No snapshot exists for the requested `type` + `date` combination. |
+| <span style={{color:"#dc2626",fontWeight:600}}>● 500</span> | `INTERNAL_ERROR` | Unexpected upstream failure. |
 
 </div>
 
