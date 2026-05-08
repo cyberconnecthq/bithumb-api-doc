@@ -1,39 +1,86 @@
 ---
 title: Market Report
-description: Consolidated daily overview of the crypto market
-openapi: openapi.json GET /v1/market/report
+description: Daily Korean market overview — sentiment, key trends, must-know news, top gainers/losers, and major events. Composed from five sub-endpoints under the Market API group.
 ---
 
-<div style={{ maxWidth: 720 }}>
+<div style={{ maxWidth: 760 }}>
 
-<h2 style={{ fontSize: '22px', marginBottom: '8px' }}>
-  Overview
-</h2>
+<h2 style={{ fontSize: "22px", marginBottom: 8 }}>Overview</h2>
 
-<p style={{ fontSize: '15px', lineHeight: '1.8', color: '#374151' }}>
-  The Market Report API provides a consolidated daily overview of the crypto market,
-  combining market sentiment indicators, trend analysis, sector insights,
-  news highlights, and asset performance.
-</p>
-
-<p style={{ fontSize: '15px', lineHeight: '1.8' }}>
-  The API evaluates overall market direction
-  <strong> (Up / Flat / Down)</strong> using internal logic and sentiment indicators
-  such as the Fear & Greed Index.
+<p style={{ fontSize: 15, lineHeight: 1.8 }}>
+  The <strong>Market Report</strong> is a consolidated daily Korean overview of the Bithumb-KRW market.
+  Rather than a single endpoint, it is a composition over five Market API endpoints — each refreshes on
+  the same daily cadence and shares the same publish time.
 </p>
 
 <Note>
-  All outputs are generated as a <strong>point-in-time snapshot</strong> and are intended
-  for informational purposes only. This API does not provide investment advice.
+  Refresh: **daily at 18:00 KST**. Promotion to public read tables completes by **17:50 KST**. The Market
+  Report surface is **text + ranked lists only** — chart payloads belong to the AI Report surface.
 </Note>
 
-<h3 style={{ marginTop: '24px' }}>What you get</h3>
+<h3 style={{ marginTop: 24 }}>Component endpoints</h3>
 
-<ul style={{ fontSize: '15px', lineHeight: '1.8' }}>
-  <li>Overall market direction (Up / Flat / Down)</li>
-  <li>Trending sectors and assets</li>
-  <li>Top gainers and losers vs previous day</li>
-  <li>Major news and upcoming events</li>
-</ul>
+<CardGroup cols={2}>
+  <Card title="Market Sentiment" icon="gauge" href="/sentiment">
+    Fear & Greed index (0–100), market breadth (Up / Flat / Down), gainers vs previous day.
+  </Card>
+  <Card title="Key Trends" icon="chart-line" href="/trends">
+    Macro and KR-specific trend summaries that may impact today's market, grouped by version.
+  </Card>
+  <Card title="AI-Highlighted News" icon="newspaper" href="/must-know-news">
+    Curated daily Korean headlines from specialized crypto and online media.
+  </Card>
+  <Card title="Today's Rising Coin" icon="arrow-trend-up" href="/rise-tokens">
+    Korean news items on Bithumb-listed assets with notable upside, with rationale.
+  </Card>
+  <Card title="Today's Falling Coin" icon="arrow-trend-down" href="/drop-tokens">
+    Korean news items on Bithumb-listed assets with notable downside, with rationale.
+  </Card>
+  <Card title="Major Events Tonight" icon="calendar" href="/events">
+    Upcoming KST-scheduled events (FOMC, earnings, regulatory milestones); ≥5 events per snapshot.
+  </Card>
+</CardGroup>
+
+<h3 style={{ marginTop: 24 }}>Common conventions</h3>
+
+<AccordionGroup>
+  <Accordion title="Cadence and reference time">
+    All Market Report endpoints refresh **daily at 18:00 KST** with the **10-minute pre-publish offset**
+    (promotion completes by **17:50 KST**). The QA reference time for sample-data validation is **`07:50 KST`**;
+    articles published after `07:50` are excluded from that day's sample.
+  </Accordion>
+
+  <Accordion title="Surface scope">
+    Market Report is **text + ranked lists only**. Charts are scoped to the AI Report surface only
+    (Slack 2026-01-12 Hugh — 🟢). Banded indicators (Fear & Greed) and breadth counts are textual.
+  </Accordion>
+
+  <Accordion title="Korean-only output, KST timestamps, KRW currency">
+    All user-facing strings are Korean. Timestamps are **Asia/Seoul (KST)**, wire format
+    `YYYY-MM-DD HH:MM:SS`. Currency is **KRW (`원`)** with `만 / 억 / 조` magnitude abbreviations and
+    thousand-separators on raw numbers. UTC and USD are forbidden in user-facing fields.
+  </Accordion>
+
+  <Accordion title="Sentence endings">
+    Korean prose uses **음/슴체** (`~함`, `~판단됨`, `~예상됨`). Banned endings: `입니다`, `습니다`,
+    `합니다`, `해요`, `있습니다`, `~다.`, `~입니다.`.
+  </Accordion>
+</AccordionGroup>
+
+<h3 style={{ marginTop: 24 }}>Sector reference (Popular Sectors)</h3>
+
+<p style={{ fontSize: 15, lineHeight: 1.8 }}>
+  When sectors are referenced (e.g. inside `Key Trends` or news content), they are restricted to Bithumb's
+  closed 14-sector taxonomy:
+</p>
+
+```
+AI · DeFi · DePIN · Fan Token · Gaming · Layer1 · Layer2 · Meme ·
+Metaverse · NFT · Payments · RWA · Service · Social
+```
+
+<p style={{ fontSize: 15, lineHeight: 1.8 }}>
+  Sector names render in Korean. Anything outside this set is invalid output.
+</p>
 
 </div>

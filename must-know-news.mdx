@@ -1,6 +1,6 @@
 ---
 title: AI-Highlighted News
-description: Must-know macro/market news list for a given date (optional).
+description: Curated Korean macro/market news headlines for the day, with per-article symbol, source, and KST publish time.
 openapi: openapi.json GET /v1/market/must-know-news
 ---
 
@@ -9,29 +9,129 @@ openapi: openapi.json GET /v1/market/must-know-news
 <h2 style={{ fontSize: "22px", marginBottom: 8 }}>Overview</h2>
 
 <p style={{ fontSize: 15, lineHeight: 1.8 }}>
-  The <strong>AI-Highlighted News</strong> API returns a curated list of macro market headlines for quick daily context.
+  The <strong>AI-Highlighted News</strong> API returns a curated list of headline articles for quick daily
+  market context. Articles are limited to Korean-language sources (specialized crypto media plus selected
+  online sources). Output strings are Korean.
 </p>
 
 <Note>
-  This endpoint returns a <strong>point-in-time snapshot</strong>. Results may change as new data is ingested.
+  Powered by the daily Market Report pipeline (refresh **18:00 KST**, promotion completes by **17:50 KST**).
+  Articles published after the day's reference time `07:50 KST` are excluded from that day's validation
+  sample.
 </Note>
 
-<h3 style={{ marginTop: 20 }}>How to use</h3>
+---
 
-<Steps>
-  <Step title="Optional: choose a date">
-    Provide <code>date</code> (YYYY-MM-DD). If omitted, the latest available snapshot is returned.
-  </Step>
+<h2 style={{ fontSize: "22px", marginBottom: 8 }}>Response Attributes</h2>
 
-  <Step title="Render as a digest">
-    Display the list as a daily macro/market digest and link out to the original sources when available.
-  </Step>
-</Steps>
+The endpoint returns a JSON array of `TokenNewsItem` objects directly (no wrapping object).
 
-<Warning>
-  Outputs are for informational purposes only and should not be interpreted as financial advice.
-</Warning>
+<ResponseField name="[]" type="array of objects" required>
+  News items, ordered by editorial priority (highest first). Each item:
+  <Expandable title="item properties">
+    <ResponseField name="title" type="string" required>
+      Korean headline summary. Plain text, no Markdown.
+    </ResponseField>
+    <ResponseField name="content" type="string" required>
+      Korean article excerpt or supporting context. Plain text; sentence endings use 음/슴체.
+    </ResponseField>
+    <ResponseField name="source" type="string" required>
+      Publisher name (Korean or English as published). Examples: `"코인데스크 코리아"`, `"블록미디어"`,
+      `"한국경제"`.
+    </ResponseField>
+    <ResponseField name="datetime" type="string" required>
+      Article publish time in **Asia/Seoul (KST)**. Wire format: `YYYY-MM-DD HH:MM:SS`.
+    </ResponseField>
+    <ResponseField name="publish_time" type="string" required>
+      Snapshot publish time (when this curated list was promoted), KST `YYYY-MM-DD HH:MM:SS`. Same value
+      across all items in a single response.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+---
+
+<h2 style={{ fontSize: "22px", marginBottom: 8 }}>Errors</h2>
+
+| Status | Code | When |
+|---|---|---|
+| <span style={{color:"#d97706",fontWeight:600}}>● 400</span> | `INVALID_PARAMS` | `date` is not `YYYY-MM-DD`. |
+| <span style={{color:"#d97706",fontWeight:600}}>● 404</span> | `NOT_FOUND` | No snapshot exists for `date`. |
+| <span style={{color:"#dc2626",fontWeight:600}}>● 500</span> | `INTERNAL_ERROR` | Unexpected upstream failure. |
 
 </div>
 
+<RequestExample>
 
+```bash cURL
+curl --request GET \
+  --url "https://api.asksurf.ai/surf-ai/v1/market/must-know-news" \
+  --header "Authorization: <api-key>"
+```
+
+```python Python
+import requests
+
+response = requests.get(
+    "https://api.asksurf.ai/surf-ai/v1/market/must-know-news",
+    headers={"Authorization": "<api-key>"},
+)
+news = response.json()
+```
+
+```javascript JavaScript
+const response = await fetch(
+  "https://api.asksurf.ai/surf-ai/v1/market/must-know-news",
+  { headers: { Authorization: "<api-key>" } },
+);
+const news = await response.json();
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+[
+  {
+    "title": "비트코인 ETF 하루 순유입 4,800억 원, 5일 연속 자금 유입",
+    "content": "미국 현물 비트코인 ETF에 5월 6일 4,800억 원 순유입이 기록되며 5일 연속 자금 유입이 확인됨. 기관 매수세가 우세함.",
+    "source": "코인데스크 코리아",
+    "datetime": "2026-05-07 07:32:00",
+    "publish_time": "2026-05-07 07:48:30"
+  },
+  {
+    "title": "솔라나 네트워크 활용 사용자 52만 명 회복",
+    "content": "솔라나 일일 활성 사용자가 5월 초 52만 명대로 회복하며 4월 중순 둔화 구간을 벗어남.",
+    "source": "블록미디어",
+    "datetime": "2026-05-07 06:14:00",
+    "publish_time": "2026-05-07 07:48:30"
+  }
+]
+```
+
+```json 400 — invalid date
+{
+  "success": false,
+  "error_code": "INVALID_PARAMS",
+  "message": "date must be YYYY-MM-DD"
+}
+```
+
+```json 404 — no snapshot for date
+{
+  "success": false,
+  "error_code": "NOT_FOUND",
+  "message": "no snapshot found for date 2025-12-31"
+}
+```
+
+```json 500 — internal error
+{
+  "success": false,
+  "error_code": "INTERNAL_ERROR",
+  "message": "unexpected upstream failure; retry with backoff"
+}
+```
+
+</ResponseExample>

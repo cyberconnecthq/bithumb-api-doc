@@ -1,6 +1,6 @@
 ---
 title: AI Report
-description: Structured research report for crypto assets (snapshot, neutral, beginner-friendly). Returns top-200 Bithumb tokens by default.
+description: Structured Korean research report for crypto assets — snapshot, neutral, beginner-friendly. Returns the top-200 Bithumb-KRW universe by default.
 openapi: openapi.json GET /v1/market/ai-report
 ---
 
@@ -9,57 +9,453 @@ openapi: openapi.json GET /v1/market/ai-report
 <h2 style={{ fontSize: "22px", marginBottom: 8 }}>Overview</h2>
 
 <p style={{ fontSize: 15, lineHeight: 1.8 }}>
-  The <strong>AI Report</strong> API generates structured research reports for crypto assets,
-  combining real-time market snapshots, trend summaries, technical analysis, sector-optimized on-chain metrics,
-  and community sentiment insights. Only tokens in the <strong>top 200 by market cap</strong> on Bithumb are included.
+  The <strong>AI Report</strong> API generates a structured Korean research report for each in-scope asset,
+  combining a real-time market snapshot, technical indicators, sector-aware on-chain metrics, community
+  sentiment, and a neutral conclusion. Coverage is limited to the <strong>top 200 Bithumb-KRW assets</strong> by market cap.
 </p>
 
 <Note>
-  This report is a <strong>point-in-time snapshot</strong> and is intended for informational purposes only.
-  It does not provide financial advice.
+  This report is a <strong>point-in-time snapshot</strong> intended for informational purposes only — it does
+  not provide financial advice.
 </Note>
 
-<h3 style={{ marginTop: 20 }}>What you'll get</h3>
+<h3 style={{ marginTop: 20 }}>Cadence & freshness</h3>
 
-<ul style={{ fontSize: 15, lineHeight: 1.8 }}>
-  <li><strong>Title</strong>: report headline</li>
-  <li><strong>Summary</strong>: concise, beginner-friendly market read</li>
-  <li><strong>Technical analysis</strong>: key chart / momentum interpretations + <code>summary</code></li>
-  <li><strong>On-chain analysis</strong>: sector-aware on-chain metrics (common/shared/sector-specific) + <code>summary</code></li>
-  <li><strong>Community</strong>: community sentiment signals</li>
-  <li><strong>Conclusion</strong>: neutral wrap-up (bullish & bearish factors)</li>
-</ul>
-
-<h3 style={{ marginTop: 20 }}>How to use</h3>
-
-<Steps>
-  <Step title="Call without ticker (default)">
-    Omit <code>ticker</code> to receive reports for <strong>all top-200 tokens</strong> by market cap.
-    The response is a list with <code>ticker</code> and <code>bithumb_rank</code> per item.
-  </Step>
-
-  <Step title="Or pick a single ticker">
-    Provide <code>ticker</code> (e.g. <code>BTC</code>) to receive a single report.
-    The ticker must be in the top 200 by market cap; otherwise a 404 is returned.
-  </Step>
-
-  <Step title="Optional: backfill by date">
-    Provide <code>date</code> (YYYY-MM-DD). If omitted, the latest snapshot is returned.
-  </Step>
-</Steps>
-
-<h3 style={{ marginTop: 20 }}>Response format</h3>
-
-<p style={{ fontSize: 15, lineHeight: 1.8 }}>
-  <strong>Without <code>ticker</code></strong>: returns <code>{"{"} reports: [{"{"} ticker, bithumb_rank, title, summary, ... {"}"}] {"}"}</code>
-</p>
-
-<p style={{ fontSize: 15, lineHeight: 1.8 }}>
-  <strong>With <code>ticker</code></strong>: returns a single report object directly (backward compatible).
-</p>
+<CardGroup cols={2}>
+  <Card title="Narrative content" icon="clock">
+    Refreshes every **4 hours** at KST `00 / 04 / 08 / 12 / 16 / 20`. Promotion to public read tables completes **≥10 minutes** before each cadence mark.
+  </Card>
+  <Card title="On-chain figures" icon="database">
+    Refresh **daily**. Market-cap / FDV / supply / 24h volume / TVL come from a single CMC quote pulled at `generated_at` (no double-fetch).
+  </Card>
+</CardGroup>
 
 <Warning>
-  If certain data is unavailable or not applicable, corresponding fields may be <code>null</code> or omitted.
+  If certain data is unavailable or not applicable, corresponding fields may be <code>null</code>, an empty
+  string, or omitted from the response.
 </Warning>
 
+---
+
+<h2 style={{ fontSize: "22px", marginBottom: 8 }}>Response Attributes</h2>
+
+<p style={{ fontSize: 15, lineHeight: 1.8 }}>
+  The single-report object below (<code>AIReportItem</code>) is returned directly when <code>ticker</code> is
+  provided, and as items in <code>reports[]</code> when it is omitted.
+</p>
+
+<h3 style={{ marginTop: 24, marginBottom: 8 }}>Identity & metadata</h3>
+
+<ResponseField name="ticker" type="string" required>
+  Bithumb exchange symbol, uppercase. Example: `BTC`, `XRP`, `XION`.
+</ResponseField>
+
+<ResponseField name="bithumb_rank" type="integer" required>
+  Rank within the Bithumb-KRW Top-200 universe at `generated_at`. Range: `1`–`200`.
+</ResponseField>
+
+<ResponseField name="uid" type="string" required>
+  Document identifier. Format: `ai_report_<SYMBOL>_YYYYMMDD_HHMM` (KST), with `HHMM` aligned to the
+  4-hour cadence (`0000 / 0400 / 0800 / 1200 / 1600 / 2000`). Unique per `(asset, generated_at)` pair.
+
+  Example: `ai_report_BTC_20260507_1600`.
+</ResponseField>
+
+<ResponseField name="generated_at" type="string" required>
+  Snapshot wall-clock in **Asia/Seoul (KST)**. Wire format: `YYYY-MM-DD HH:MM:SS` (space-separated, no
+  timezone suffix). Example: `2026-05-07 17:31:06`.
+
+  <Note>
+    The wall-clock minute/second reflects the actual write time and does **not** match the cadence mark — use
+    `uid` (which encodes `HHMM`) when joining against the 4-hour batch.
+  </Note>
+</ResponseField>
+
+<h3 style={{ marginTop: 24, marginBottom: 8 }}>Headline content</h3>
+
+<ResponseField name="title.title" type="string" required>
+  Korean headline derived from `summary.summary`. Length: **13–16 Korean characters**
+  (validator: `validate_title_length_range(13, 16)`). Generic boilerplate such as
+  `"비트코인(BTC) 종합 분석"` is rejected; the title must capture the actual narrative.
+
+  Example: `"비트코인 골든크로스 진행 매수세 확대"` (16자).
+
+  <Note>
+    On the wire this string is wrapped in a single-key object: `"title": { "title": "..." }`.
+    The wrapping is preserved for backward compatibility; an unwrap is being tracked in the
+    structured-output schema cleanup.
+  </Note>
+</ResponseField>
+
+<ResponseField name="summary.summary" type="string" required>
+  Multi-bullet Korean markdown. Each bullet uses `\n- 헤드라인: 본문` form and synthesizes per-metric
+  scores plus sentiment into prose. The first reference to an asset includes the Korean name and
+  bracketed symbol (e.g. `**비트코인(BTC)**`).
+
+  Wrapped on the wire as `"summary": { "summary": "..." }` (same caveat as `title.title` above).
+</ResponseField>
+
+<h3 style={{ marginTop: 24, marginBottom: 8 }}>Analysis blocks</h3>
+
+<ResponseField name="technical" type="object" required>
+  Key chart / momentum interpretations across four fixed indicator slots.
+  <Expandable title="properties">
+    <ResponseField name="indicators" type="array of objects" required>
+      **Always exactly 4 items in fixed order.** Dynamic per-asset selection is forbidden — the renderer
+      cannot reorder.
+
+      | Slot | `name` (wire) | Indicator | Parameters |
+      |---|---|---|---|
+      | ① 거래량 | `거래량 - OBV` | On-Balance Volume | — |
+      | ② 변동성 | `변동성 - 볼린저 밴드` | Bollinger Bands | (20, 2) |
+      | ③ 추세 | `추세 - MACD` | MACD | (12, 26, 9) |
+      | ④ 모멘텀 | `모멘텀 - RSI` | Relative Strength Index | (14) |
+
+      <Expandable title="item properties">
+        <ResponseField name="name" type="string" required>
+          One of the four fixed Korean labels above. Order is locked by slot index.
+        </ResponseField>
+        <ResponseField name="indicator_status" type="string" required>
+          Declarative numeric snapshot (~1 sentence) in Korean. **Cites the figures.**
+          Example: `"OBV 기울기 -0.0989로 하락세 지속. 최근 24시간 +58.51% 반등에도 전체 기울기는 음수 유지."`
+        </ResponseField>
+        <ResponseField name="analysis" type="string" required>
+          Interpretive narrative (~1–2 sentences) in Korean. **Must not restate any number that already
+          appears in `indicator_status`.**
+        </ResponseField>
+      </Expandable>
+    </ResponseField>
+
+    <ResponseField name="summary" type="string" required>
+      Multi-bullet Korean synthesis across the four indicators, organized as
+      `* **현재 추세** / * **주요 가격대** / * **향후 관건**`.
+
+      <Note>
+        Wire field is `summary`. The current `openapi.json` declares this field as `simple_summary`; the
+        upstream `huginn` schema is being reconciled.
+      </Note>
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="onchain" type="object" required>
+  Sector-aware on-chain metrics, projection, and cautionary notes.
+  <Expandable title="properties">
+    <ResponseField name="sector_group" type="object" required>
+      Single sector classification (one sector per asset, sourced from `kor_tags1`).
+      <Expandable title="properties">
+        <ResponseField name="name" type="string" required>
+          Korean display label of one of the **closed 14-sector enum**:
+          `AI · DeFi · DePIN · Fan Token · Gaming · Layer1 · Layer2 · Meme · Metaverse · NFT · Payments · RWA · Service · Social`.
+
+          Wire renders Korean (e.g. `"레이어1"`, `"디파이"`). Anything outside this set is rejected.
+        </ResponseField>
+        <ResponseField name="description" type="string" required>
+          One-line Korean description of the sector (e.g. `"기반 블록체인 네트워크"`).
+        </ResponseField>
+      </Expandable>
+    </ResponseField>
+
+    <ResponseField name="comprehensive_data" type="array of objects" required>
+      Sector-aware on-chain metric blocks. **Keys are dynamic per token** — the SRS-illustrative names
+      (`market_valuation`, `network_health`, `infrastructure_stability`, `development_ecosystem`) are
+      examples, **not exhaustive**.
+      <Expandable title="item properties">
+        <ResponseField name="title_ko" type="string" required>
+          Korean section heading rendered by the front-end. Examples: `"시장 가치 평가"`,
+          `"네트워크 활용 현황"`, `"개발자 활동"`, `"인프라 안정성"`.
+        </ResponseField>
+        <ResponseField name="content" type="string" required>
+          Korean prose for that block. Numeric values use thousand separators and 만/억/조 magnitude
+          abbreviations (e.g. `"시가총액 2,366조 5,657억 원..."`).
+        </ResponseField>
+      </Expandable>
+    </ResponseField>
+
+    <ResponseField name="precautions" type="array of strings" required>
+      Korean cautionary bullets surfaced from the on-chain analysis.
+
+      Example: `"거래량이 7일 평균 0.6배 수준으로 낮아 단기 가격 변동성 확대 가능성 존재."`
+    </ResponseField>
+
+    <ResponseField name="outlook" type="string" required>
+      Korean forward-looking note (1–3 sentences) interpreting the on-chain trajectory.
+    </ResponseField>
+
+    <ResponseField name="summary" type="string" required>
+      Korean prose summary of the on-chain section.
+
+      <Note>
+        Wire field is `summary`. The current `openapi.json` declares it as `simple_summary`; mismatch with
+        upstream `huginn` is being reconciled.
+      </Note>
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="community" type="object" required>
+  Community sentiment signals derived from KOL / social activity.
+  <Expandable title="properties">
+    <ResponseField name="overall_sentiment" type="object" required>
+      <Expandable title="properties">
+        <ResponseField name="score" type="integer" required>
+          Sentiment score. Range: `1`–`100`.
+        </ResponseField>
+        <ResponseField name="label" type="string" required>
+          Korean grade band, deterministically derived from `score`:
+
+          | `score` range | `label` |
+          |---|---|
+          | 1–20  | 매우 부정 |
+          | 21–40 | 부정 |
+          | 41–60 | 중립 |
+          | 61–80 | 긍정 |
+          | 81–100 | 매우 긍정 |
+
+          The unspaced variants `매우부정` / `매우긍정` are tolerated on read; canonical pipeline output
+          stays spaced.
+
+          <Note>
+            The SRS specifies an additional `analysis` text field on this object (one Korean sentence
+            citing at least one `key_topic` and explaining *why* the score landed there). It is **not yet
+            present on the wire** — coming in a subsequent release.
+          </Note>
+        </ResponseField>
+      </Expandable>
+    </ResponseField>
+
+    <ResponseField name="key_topics" type="array of strings" required>
+      Up to **3** Korean topic strings driving the sentiment score. Each entry follows the form
+      `"<주제> — <설명> (심리 영향: ±N점)"`. Every entry must (a) influence the sentiment score and
+      (b) align with `overall_sentiment.label`.
+
+      Example: `"가격 목표 논의 — 90K 달성 가능성에 대한 트레이더 의견 활발 (심리 영향: +12점)"`.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="conclusion" type="object" required>
+  Neutral wrap-up — three required keys, format-locked.
+  <Expandable title="properties">
+    <ResponseField name="positive_factors" type="array of strings" required>
+      Korean bullets identifying positive findings. Each bullet must follow `<현상>: <기회 의미>` form.
+      Listing a number without explaining its meaning is rejected.
+    </ResponseField>
+    <ResponseField name="cautionary_factors" type="array of strings" required>
+      Korean bullets identifying negative situations or areas requiring caution. Same `<현상>: <리스크 의미>`
+      reasoning constraint as `positive_factors`.
+    </ResponseField>
+    <ResponseField name="overall_opinion" type="string" required>
+      **Neutral** Korean synthesis paraphrasing **at least one** positive factor and **at least one**
+      cautionary factor — without re-using the underlying numbers.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+---
+
+<h2 style={{ fontSize: "22px", marginBottom: 8 }}>Cross-cutting rules</h2>
+
+<AccordionGroup>
+  <Accordion title="Language, tone, and currency">
+    - All user-facing strings are **Korean**. English abbreviations remain only when no canonical Korean
+      equivalent exists (`SEC`, `CMC`, `FOMC`, `Saylor`).
+    - Sentence endings use **음/슴체** (`~함`, `~판단됨`, `~예상됨`). Banned endings: `입니다`, `습니다`,
+      `합니다`, `해요`, `있습니다`, `~다.`, `~입니다.`.
+    - Currency is **KRW (`원`)**. USD is forbidden in user-facing fields. Magnitudes use `만 / 억 / 조`
+      (e.g. `1억 1,954만 원`, `2,366조 5,657억 원`); 8+ digit raw `원` strings are rejected.
+    - Timestamps are **Asia/Seoul (KST)**. UTC is forbidden in user-facing fields.
+  </Accordion>
+
+  <Accordion title="Wire format">
+    - Plain JSON. Korean prose lives inside string fields; the front-end renders Markdown / line breaks /
+      emphasis.
+    - Where a string field's content is a list, bullets are separated by `\n- `.
+    - Numeric values displayed to the user always carry thousand separators.
+  </Accordion>
+
+  <Accordion title="Substitution-bug guardrail">
+    The pipeline does **not** perform regex `symbol → Korean-name` substitution on narrative text.
+    The legacy bug `text.replace("BB", "바운스빗")` clobbered the Bollinger Band abbreviation. Korean asset
+    names are appended in parentheses by the LLM at generation time; abbreviation localization happens via a
+    glossary keyed on full tokens (`BB_Percent`, not bare `BB`).
+  </Accordion>
+</AccordionGroup>
+
+---
+
+<h2 style={{ fontSize: "22px", marginBottom: 8 }}>Errors</h2>
+
+The endpoint returns a `BaseResponse` envelope (`success`, `error_code`, `message`) for non-2xx responses.
+
+| Status | Code | When |
+|---|---|---|
+| <span style={{color:"#d97706",fontWeight:600}}>● 400</span> | `INVALID_PARAMS` | `date` is not `YYYY-MM-DD` or `ticker` contains invalid characters. |
+| <span style={{color:"#d97706",fontWeight:600}}>● 404</span> | `NOT_FOUND` | `ticker` is not in the current Top-200 universe, or no snapshot exists for `date`. |
+| <span style={{color:"#dc2626",fontWeight:600}}>● 500</span> | `INTERNAL_ERROR` | Unexpected upstream failure (CMC fetch, DB read, model call). Retry with exponential backoff. |
+
 </div>
+
+<RequestExample>
+
+```bash cURL
+curl --request GET \
+  --url "https://api.asksurf.ai/surf-ai/v1/market/ai-report?ticker=BTC" \
+  --header "Authorization: <api-key>"
+```
+
+```python Python
+import requests
+
+response = requests.get(
+    "https://api.asksurf.ai/surf-ai/v1/market/ai-report",
+    params={"ticker": "BTC"},
+    headers={"Authorization": "<api-key>"},
+)
+report = response.json()
+```
+
+```javascript JavaScript
+const response = await fetch(
+  "https://api.asksurf.ai/surf-ai/v1/market/ai-report?ticker=BTC",
+  { headers: { Authorization: "<api-key>" } },
+);
+const report = await response.json();
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200 — single ticker
+{
+  "ticker": "BTC",
+  "bithumb_rank": 1,
+  "uid": "ai_report_BTC_20260507_1600",
+  "generated_at": "2026-05-07 17:31:06",
+  "title": {
+    "title": "비트코인 골든크로스 진행 매수세 확대"
+  },
+  "summary": {
+    "summary": "- **비트코인(BTC)** 24시간 -0.03% 소폭 하락하며 1억 1,954만 원 부근 거래됨\n- MACD (12, 26, 9) 골든 크로스 진행으로 단기 매수세 유입이 확인됨\n- 볼린저 밴드 (20, 2) 상단을 상회하며 변동성 수축 국면을 보임\n- OBV 기울기 -0.0989를 기록하며 거래 참여 약화가 우려됨"
+  },
+  "technical": {
+    "indicators": [
+      {
+        "name": "거래량 - OBV",
+        "indicator_status": "OBV 기울기 -0.0989로 하락세 지속. 최근 24시간 +58.51% 반등에도 전체 기울기는 음수 유지.",
+        "analysis": "OBV 하락세로 거래 참여가 약화됨. 30일 분포 p17 수준 거래량이 7일 평균 0.6배에 그쳐 매매세 지속력이 제한적임."
+      },
+      {
+        "name": "변동성 - 볼린저 밴드",
+        "indicator_status": "볼린저 밴드 (20, 2) 상단 밴드 상회. %B 2.15 기록하며 변동성 수축 국면 / 스퀴즈 진행.",
+        "analysis": "볼린저 밴드 (20, 2) 폭 0.0033로 수축하며 가격이 상단을 벗어남. 변동성 확대 전환 시 단기 급등 가능성 있지만 현재는 박스권 탈출 대기 국면."
+      },
+      {
+        "name": "추세 - MACD",
+        "indicator_status": "MACD (12, 26, 9) 골든 크로스 진행 중. 히스토그램 +12,362으로 양전환 확인.",
+        "analysis": "MACD (12, 26, 9) 라인 27,985이 신호선 위로 올라서며 단기 매매세가 강화됨. 24시간 내 신규 골든 크로스 발생으로 추세 전환 신호 뚜렷."
+      },
+      {
+        "name": "모멘텀 - RSI",
+        "indicator_status": "RSI (14) 57.97 중립 구간. 30일 +17.37 상승하며 점진적 추진력 회복.",
+        "analysis": "RSI (14) 과매매 70선까지 여유 있어 추가 상승 여지 존재. 4시간 +6.76 반등으로 단기 추진력 개선됨."
+      }
+    ],
+    "summary": "* **현재 추세**: MACD (12, 26, 9) 골든 크로스 진행 중으로 단기 매매세가 우세하나 OBV 하락세로 유동성 부족이 겹쳐 양방향 변동이 제한적임.\n* **주요 가격대**: 단기 지지 1억 1,871만 원(볼린저 밴드 하단), 1차 저항 1억 1,914만 원(볼린저 밴드 상단).\n* **향후 관건**: 거래대금이 7일 평균 대비 0.6배 이하로 축소될 경우 단기 매매세 둔화 신호로 작용할 수 있음."
+  },
+  "onchain": {
+    "sector_group": {
+      "name": "레이어1",
+      "description": "기반 블록체인 네트워크"
+    },
+    "comprehensive_data": [
+      {
+        "title_ko": "네트워크 활용 현황",
+        "content": "일일 거래 585,611건과 활성 사용자 528,864명으로 30일 평균 대비 안정적 수준 유지."
+      },
+      {
+        "title_ko": "시장 가치 평가",
+        "content": "시가총액 2,366조 5,657억 원으로 완전희석가치 대비 95% 수준. 24시간 거래대금 58조 2,505억 원."
+      },
+      {
+        "title_ko": "개발자 활동",
+        "content": "최근 5월 5일 기준 활성 개발자 22명, 코드 커밋 2건으로 소폭 감소."
+      }
+    ],
+    "precautions": [
+      "거래량이 7일 평균 0.6배 수준으로 낮아 단기 가격 변동성 확대 가능성 존재.",
+      "OBV 기울기 음수 유지로 대규모 매도 압력 발생 시 급락 리스크 있음."
+    ],
+    "outlook": "일일 거래량이 30일 평균 대비 안정적으로 유지되며 네트워크 기반이 견고함.",
+    "summary": "비트코인 네트워크에서 일일 거래 58만 건과 활성 사용자 52만 명 수준을 유지하며 안정적 이용이 이어짐."
+  },
+  "community": {
+    "overall_sentiment": {
+      "score": 68,
+      "label": "긍정"
+    },
+    "key_topics": [
+      "가격 목표 논의 — 90K 달성 가능성에 대한 트레이더 의견 활발 (심리 영향: +12점)",
+      "기관 동향 — Strategy 실적 및 비트코인 콘퍼런스 관련 기대감 (심리 영향: +6점)"
+    ]
+  },
+  "conclusion": {
+    "positive_factors": [
+      "MACD (12, 26, 9) 골든 크로스 진행으로 단기 매매세가 명확히 유입됨.",
+      "RSI (14) 57.97 중립 구간에서 추가 상승 여력이 남아 있음."
+    ],
+    "cautionary_factors": [
+      "OBV 기울기 -0.0989로 거래 참여가 약화되며 유동성 부족 우려.",
+      "볼린저 밴드 (20, 2) 폭 0.0033로 변동성 수축이 지속돼 돌파 실패 시 급락 가능."
+    ],
+    "overall_opinion": "MACD 골든 크로스와 RSI 중립이 단기 상승 동력을 제공함. OBV 하락과 낮은 거래대금이 상승 폭을 제한함."
+  }
+}
+```
+
+```json 200 — all top-200
+{
+  "reports": [
+    {
+      "ticker": "BTC",
+      "bithumb_rank": 1,
+      "uid": "ai_report_BTC_20260507_1600",
+      "generated_at": "2026-05-07 17:31:06",
+      "title": { "title": "비트코인 골든크로스 진행 매수세 확대" },
+      "summary": { "summary": "- **비트코인(BTC)** 24시간 -0.03% 소폭 하락..." },
+      "technical": { "indicators": [/* 4 fixed slots */], "summary": "..." },
+      "onchain":   { "sector_group": { "name": "레이어1", "description": "..." }, "comprehensive_data": [/* dynamic */], "precautions": [], "outlook": "...", "summary": "..." },
+      "community": { "overall_sentiment": { "score": 68, "label": "긍정" }, "key_topics": [] },
+      "conclusion": { "positive_factors": [], "cautionary_factors": [], "overall_opinion": "..." }
+    }
+    // ... 199 more entries, one per top-200 asset
+  ]
+}
+```
+
+```json 400 — invalid params
+{
+  "success": false,
+  "error_code": "INVALID_PARAMS",
+  "message": "date must be YYYY-MM-DD"
+}
+```
+
+```json 404 — ticker not in top 200
+{
+  "success": false,
+  "error_code": "NOT_FOUND",
+  "message": "ticker 'PUMPBTC' is not in the current Top-200 universe"
+}
+```
+
+```json 500 — internal error
+{
+  "success": false,
+  "error_code": "INTERNAL_ERROR",
+  "message": "upstream CMC quote unavailable; retry with backoff"
+}
+```
+
+</ResponseExample>
