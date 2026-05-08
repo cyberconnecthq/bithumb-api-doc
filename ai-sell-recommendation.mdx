@@ -25,12 +25,6 @@ openapi: openapi.json GET /v1/market/ai-sell-recommendation
   bare integers. The Mintlify viewer may drop the trailing `.0` cosmetically; the wire bytes are correct.
 </Warning>
 
-<h3 style={{ marginTop: 20 }}>Query parameters</h3>
-
-<ParamField query="date" type="string">
-  Snapshot date in `YYYY-MM-DD` (KST). When omitted, the most recent snapshot is returned.
-</ParamField>
-
 <h3 style={{ marginTop: 20 }}>Cadence & freshness</h3>
 
 <CardGroup cols={2}>

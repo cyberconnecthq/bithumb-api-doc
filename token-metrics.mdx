@@ -21,13 +21,6 @@ openapi: openapi.json GET /v1/market/token-metrics
   rather than propagating an upstream error.
 </Note>
 
-<h3 style={{ marginTop: 20 }}>Query parameters</h3>
-
-<ParamField query="symbol" type="string" required>
-  Bithumb exchange symbol (uppercase). Example: `BTC`, `ETH`, `SOL`.
-  Returns `404` if the symbol is not in the current Top-200 universe.
-</ParamField>
-
 <h3 style={{ marginTop: 20 }}>Metric coalesce order</h3>
 
 The pipeline tries each metric in order; the first available, non-zero series is returned.

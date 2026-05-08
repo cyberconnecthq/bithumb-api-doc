@@ -19,24 +19,6 @@ openapi: openapi.json GET /v1/market/ai-report
   not provide financial advice.
 </Note>
 
-<h3 style={{ marginTop: 20 }}>Query parameters</h3>
-
-<ParamField query="ticker" type="string">
-  Bithumb exchange symbol (uppercase). When provided, returns a single report object directly. When omitted,
-  returns `{ reports: [...] }` covering all top-200 assets. Returns `404` if the ticker is not in the current
-  top 200.
-</ParamField>
-
-<ParamField query="date" type="string">
-  Snapshot date in `YYYY-MM-DD` (KST). When omitted, the latest snapshot is returned. The backend treats
-  `date` as KST 00:00 of that day.
-</ParamField>
-
-<ParamField query="raw" type="boolean" default="false">
-  When `true`, returns the **pre-polish** base report (raw model output) instead of the post-polish
-  pipeline output. Used by Bithumb QA to score raw model output; not intended for production traffic.
-</ParamField>
-
 <h3 style={{ marginTop: 20 }}>Cadence & freshness</h3>
 
 <CardGroup cols={2}>

@@ -20,26 +20,6 @@ openapi: openapi.json GET /v1/market/ai-recommended-assets
   and [`/v1/market/ai-sell-recommendation`](/ai-sell-recommendation) (`total_score < 4.0`, ascending).
 </Note>
 
-<h3 style={{ marginTop: 20 }}>Query parameters</h3>
-
-<ParamField query="type" type="string" required>
-  Response mode. One of:
-  - `score_ranking` — full ranking + per-category ranks + interpretation
-  - `summary` — score + Korean title (≤20 chars) + multi-bullet markdown summary
-  - `comprehensive_evaluation` — score + opinion band + interpretation
-  - `sentiment_trend` — bullish/bearish percentages + Korean sentiment label
-</ParamField>
-
-<ParamField query="tickers" type="string">
-  Comma-separated symbols (e.g. `BTC,ETH,SOL`). When omitted, returns all 200 assets sorted by `total_score`
-  (descending). Symbols outside the Top-200 universe are silently dropped.
-</ParamField>
-
-<ParamField query="date" type="string">
-  Snapshot date in `YYYY-MM-DD` (KST). The backend treats the date as KST 00:00 of that day.
-  When omitted, the most recent snapshot is returned.
-</ParamField>
-
 <h3 style={{ marginTop: 20 }}>Cadence & freshness</h3>
 
 <CardGroup cols={2}>

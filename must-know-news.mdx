@@ -20,16 +20,6 @@ openapi: openapi.json GET /v1/market/must-know-news
   sample.
 </Note>
 
-<h3 style={{ marginTop: 20 }}>Query parameters</h3>
-
-<ParamField query="date" type="string">
-  Snapshot date in `YYYY-MM-DD` (KST). When omitted, the most recent snapshot is returned.
-</ParamField>
-
-<ParamField query="raw" type="boolean" default="false">
-  When `true`, returns the **pre-polish** raw model output. Used by Bithumb QA; not for production traffic.
-</ParamField>
-
 ---
 
 <h2 style={{ fontSize: "22px", marginBottom: 8 }}>Response Attributes</h2>
