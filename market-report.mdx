@@ -11,15 +11,17 @@ openapi: openapi.json GET /v1/market/report
 </h2>
 
 <p style={{ fontSize: '15px', lineHeight: '1.8', color: '#374151' }}>
-  The Market Report API provides a consolidated daily overview of the crypto market,
-  combining market sentiment indicators, trend analysis, sector insights,
-  news highlights, and asset performance.
+  The Market Report API returns a single point-in-time snapshot that aggregates
+  six independent market views into one response: AI-highlighted news, today's
+  rising and falling tokens, market sentiment, key trend events, and major
+  events tonight.
 </p>
 
 <p style={{ fontSize: '15px', lineHeight: '1.8' }}>
-  The API evaluates overall market direction
-  <strong> (Up / Flat / Down)</strong> using internal logic and sentiment indicators
-  such as the Fear & Greed Index.
+  Each section comes from its own upstream batch and surfaces its own
+  <code>publish_time</code>; sections do not share a batch timestamp. Missing
+  sections render as <code>null</code> or empty arrays rather than failing the
+  whole response.
 </p>
 
 <Note>
@@ -30,10 +32,11 @@ openapi: openapi.json GET /v1/market/report
 <h3 style={{ marginTop: '24px' }}>What you get</h3>
 
 <ul style={{ fontSize: '15px', lineHeight: '1.8' }}>
-  <li>Overall market direction (Up / Flat / Down)</li>
-  <li>Trending sectors and assets</li>
-  <li>Top gainers and losers vs previous day</li>
-  <li>Major news and upcoming events</li>
+  <li><strong>must_know_news</strong> — AI-highlighted macro/market news digest</li>
+  <li><strong>rise_tokens</strong> / <strong>drop_tokens</strong> — today's biggest gainers and losers with reasons</li>
+  <li><strong>market_sentiment</strong> — Fear &amp; Greed index plus UP/FLAT/DOWN price-fluctuation counts</li>
+  <li><strong>key_trend_events</strong> — major themes shaping the Korean crypto market</li>
+  <li><strong>market_events</strong> — scheduled events for the rest of the day (FOMC, rate decisions, etc.)</li>
 </ul>
 
 </div>
