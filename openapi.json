@@ -1451,7 +1451,7 @@
             "AccessToken": []
           }
         ],
-        "description": "Returns structured AI analysis from the bithumb_reports table for the given signal type.",
+        "description": "Returns structured AI analysis from the bithumb_reports table.\nWhen `type` is provided, returns a single object for that signal type.\nWhen `type` is omitted, returns an array of objects for all signal types in canonical order; missing types are skipped.",
         "tags": [
           "Market"
         ],
@@ -1466,10 +1466,9 @@
             }
           },
           {
-            "description": "Signal type",
+            "description": "Signal type. If omitted, all types are returned as an array.",
             "name": "type",
             "in": "query",
-            "required": true,
             "schema": {
               "type": "string",
               "enum": [
@@ -1494,7 +1493,7 @@
             }
           },
           {
-            "description": "If true, serves the pre-polish base_report (raw model output) instead of post-polish ai_json_*. Used by bithumb-qa to score raw model output.",
+            "description": "If true, serves the pre-polish base_report (raw model output) instead of post-polish ai_json_*.",
             "name": "raw",
             "in": "query",
             "schema": {
@@ -1504,7 +1503,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Returns AI recommended prompt on success",
+            "description": "Single object when type is provided; array of objects when type is omitted",
             "content": {
               "application/json": {
                 "schema": {
