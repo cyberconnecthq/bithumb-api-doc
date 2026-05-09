@@ -1684,21 +1684,21 @@
         }
       }
     },
-    "/v1/market/drop-tokens": {
+    "/v1/market/report": {
       "get": {
         "security": [
           {
             "AccessToken": []
           }
         ],
-        "description": "Returns drop token news list for a given date (optional).\nData is fetched from `bithumb_reports` by signal_type = drop_token_news and the latest batch_sequence.",
+        "description": "Aggregates the six legacy market sub-endpoints (must-know-news, rise-tokens, drop-tokens, sentiment, trends, events) in one response. Each section is independent — sub-sources do not share a batch_sequence — and missing sub-sources surface as null/empty rather than 404'ing the whole response.",
         "tags": [
           "Market"
         ],
-        "summary": "Drop Tokens News",
+        "summary": "Market Report (aggregate)",
         "parameters": [
           {
-            "description": "Date in YYYY-MM-DD format. If date is not provided, returns the most recent data",
+            "description": "Date in YYYY-MM-DD format. If date is not provided, returns the most recent data per section",
             "name": "date",
             "in": "query",
             "schema": {
@@ -1706,7 +1706,7 @@
             }
           },
           {
-            "description": "If true, serves the pre-polish base_report (raw model output) instead of post-polish ai_json_*. Used by bithumb-qa to score raw model output.",
+            "description": "If true, serves the pre-polish base_report (raw model output) instead of post-polish ai_json_*.",
             "name": "raw",
             "in": "query",
             "schema": {
@@ -1716,11 +1716,11 @@
         ],
         "responses": {
           "200": {
-            "description": "Returns news list on success",
+            "description": "Returns aggregated market report on success",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/model.GenericResponse-array_model_TokenNewsItem"
+                  "$ref": "#/components/schemas/model.GenericResponse-model_MarketReportResponse"
                 }
               }
             }
@@ -1737,352 +1737,6 @@
           },
           "401": {
             "description": "When unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/model.BaseResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "When message not found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/model.BaseResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal server error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/model.BaseResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/v1/market/events": {
-      "get": {
-        "security": [
-          {
-            "AccessToken": []
-          }
-        ],
-        "description": "Returns major events list for a given date (optional).\nData is fetched from `bithumb_reports` by signal_type = major_event_tonight (fallback: major_events_tonight) and the latest batch_sequence.",
-        "tags": [
-          "Market"
-        ],
-        "summary": "Major Events Tonight",
-        "parameters": [
-          {
-            "description": "Date in YYYY-MM-DD format. If date is not provided, returns the most recent data",
-            "name": "date",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "description": "If true, serves the pre-polish base_report (raw model output) instead of post-polish ai_json_*. Used by bithumb-qa to score raw model output.",
-            "name": "raw",
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Returns major events on success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/model.GenericResponse-model_MajorEventsResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "When request parameters are invalid",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/model.BaseResponse"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "When unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/model.BaseResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "When message not found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/model.BaseResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal server error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/model.BaseResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/v1/market/must-know-news": {
-      "get": {
-        "security": [
-          {
-            "AccessToken": []
-          }
-        ],
-        "description": "Render as a digest\nDisplay the list as a daily macro/market digest and link out to the original sources when available.\nMust-know macro/market news list for a given date (optional).",
-        "tags": [
-          "Market"
-        ],
-        "summary": "AI-Highlighted news",
-        "parameters": [
-          {
-            "description": "Date in YYYY-MM-DD format. If date is not provided, returns the most recent data",
-            "name": "date",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "description": "If true, serves the pre-polish base_report (raw model output) instead of post-polish ai_json_*. Used by bithumb-qa to score raw model output.",
-            "name": "raw",
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Returns news list on success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/model.GenericResponse-array_model_TokenNewsItem"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "When request parameters are invalid",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/model.BaseResponse"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "When unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/model.BaseResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "When message not found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/model.BaseResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal server error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/model.BaseResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/v1/market/rise-tokens": {
-      "get": {
-        "security": [
-          {
-            "AccessToken": []
-          }
-        ],
-        "description": "Returns rise token news list for a given date (optional).",
-        "tags": [
-          "Market"
-        ],
-        "summary": "Rise Tokens News",
-        "parameters": [
-          {
-            "description": "Date in YYYY-MM-DD format. If date is not provided, returns the most recent data",
-            "name": "date",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "description": "If true, serves the pre-polish base_report (raw model output) instead of post-polish ai_json_*. Used by bithumb-qa to score raw model output.",
-            "name": "raw",
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Returns news list on success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/model.GenericResponse-array_model_TokenNewsItem"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "When request parameters are invalid",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/model.BaseResponse"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "When unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/model.BaseResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "When message not found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/model.BaseResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal server error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/model.BaseResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/v1/market/sentiment": {
-      "get": {
-        "security": [
-          {
-            "AccessToken": []
-          }
-        ],
-        "description": "Returns market sentiment snapshot.\nData is fetched from `bithumb_reports` by signal_type = market_sentiment and the latest batch_sequence (optionally filtered by date).",
-        "tags": [
-          "Market"
-        ],
-        "summary": "Market Sentiment",
-        "parameters": [
-          {
-            "description": "Date in YYYY-MM-DD format. If date is not provided, returns the most recent data",
-            "name": "date",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "description": "If true, serves the pre-polish base_report (raw model output) instead of post-polish ai_json_*. Used by bithumb-qa to score raw model output.",
-            "name": "raw",
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Returns market sentiment on success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/model.GenericResponse-model_MarketSentimentResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "When request parameters are invalid",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/model.BaseResponse"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "When unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/model.BaseResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "When message not found",
             "content": {
               "application/json": {
                 "schema": {
@@ -2170,90 +1824,6 @@
           },
           "502": {
             "description": "Bad Gateway",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/model.BaseResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/v1/market/trends": {
-      "get": {
-        "security": [
-          {
-            "AccessToken": []
-          }
-        ],
-        "description": "provide a comprehensive list and analysis of all major events that may impact the crypto market, with a special focus on macroeconomic and market-specific factors affecting the Korean (KR) crypto market.",
-        "tags": [
-          "Market"
-        ],
-        "summary": "Key Trends",
-        "parameters": [
-          {
-            "description": "Date in YYYY-MM-DD format. If date is not provided, returns the most recent data",
-            "name": "date",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "description": "If true, serves the pre-polish base_report (raw model output) instead of post-polish ai_json_*. Used by bithumb-qa to score raw model output.",
-            "name": "raw",
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Returns key trends on success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/model.GenericResponse-model_KeyTrendsResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "When request parameters are invalid",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/model.BaseResponse"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "When unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/model.BaseResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "When message not found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/model.BaseResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal server error",
             "content": {
               "application/json": {
                 "schema": {
@@ -2915,29 +2485,6 @@
           }
         }
       },
-      "model.GenericResponse-array_model_TokenNewsItem": {
-        "type": "object",
-        "properties": {
-          "data": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/model.TokenNewsItem"
-            }
-          },
-          "error_code": {
-            "type": "string",
-            "example": "FORBIDDEN"
-          },
-          "message": {
-            "type": "string",
-            "example": "success"
-          },
-          "success": {
-            "type": "boolean",
-            "example": true
-          }
-        }
-      },
       "model.GenericResponse-model_AIRecommendedAssetsResponse": {
         "type": "object",
         "properties": {
@@ -3078,26 +2625,6 @@
           }
         }
       },
-      "model.GenericResponse-model_KeyTrendsResponse": {
-        "type": "object",
-        "properties": {
-          "data": {
-            "$ref": "#/components/schemas/model.KeyTrendsResponse"
-          },
-          "error_code": {
-            "type": "string",
-            "example": "FORBIDDEN"
-          },
-          "message": {
-            "type": "string",
-            "example": "success"
-          },
-          "success": {
-            "type": "boolean",
-            "example": true
-          }
-        }
-      },
       "model.GenericResponse-model_ListTenantsResponseData": {
         "type": "object",
         "properties": {
@@ -3138,31 +2665,11 @@
           }
         }
       },
-      "model.GenericResponse-model_MajorEventsResponse": {
+      "model.GenericResponse-model_MarketReportResponse": {
         "type": "object",
         "properties": {
           "data": {
-            "$ref": "#/components/schemas/model.MajorEventsResponse"
-          },
-          "error_code": {
-            "type": "string",
-            "example": "FORBIDDEN"
-          },
-          "message": {
-            "type": "string",
-            "example": "success"
-          },
-          "success": {
-            "type": "boolean",
-            "example": true
-          }
-        }
-      },
-      "model.GenericResponse-model_MarketSentimentResponse": {
-        "type": "object",
-        "properties": {
-          "data": {
-            "$ref": "#/components/schemas/model.MarketSentimentResponse"
+            "$ref": "#/components/schemas/model.MarketReportResponse"
           },
           "error_code": {
             "type": "string",
@@ -3461,26 +2968,6 @@
           }
         }
       },
-      "model.KeyTrendsResponse": {
-        "type": "object",
-        "properties": {
-          "datetime": {
-            "type": "string"
-          },
-          "key_trend_events": {
-            "type": "array",
-            "items": {
-              "type": "array",
-              "items": {
-                "$ref": "#/components/schemas/model.KeyTrendEvent"
-              }
-            }
-          },
-          "publish_time": {
-            "type": "string"
-          }
-        }
-      },
       "model.LLMModel": {
         "type": "string",
         "enum": [
@@ -3583,6 +3070,44 @@
           "MarketPriceFluctuationTypeFLAT",
           "MarketPriceFluctuationTypeDOWN"
         ]
+      },
+      "model.MarketReportResponse": {
+        "type": "object",
+        "properties": {
+          "drop_tokens": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/model.TokenNewsItem"
+            }
+          },
+          "key_trend_events": {
+            "type": "array",
+            "items": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/model.KeyTrendEvent"
+              }
+            }
+          },
+          "market_events": {
+            "$ref": "#/components/schemas/model.MajorEventsResponse"
+          },
+          "market_sentiment": {
+            "$ref": "#/components/schemas/model.MarketSentimentResponse"
+          },
+          "must_know_news": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/model.TokenNewsItem"
+            }
+          },
+          "rise_tokens": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/model.TokenNewsItem"
+            }
+          }
+        }
       },
       "model.MarketSentimentResponse": {
         "type": "object",
@@ -3992,6 +3517,11 @@
           "exchange": {
             "type": "string",
             "example": "BITHUMB"
+          },
+          "is_sentiment_insufficient_data": {
+            "description": "IsSentimentInsufficientData reflects Argus's is_insufficient_data flag at the\ntime the writer captured Sentiment (e.g. <5 mentions over 7d). When true,\nSentiment is NULL by construction. nil means the writer did not record the\nflag (legacy rows written before the column existed).",
+            "type": "boolean",
+            "example": false
           },
           "open_time": {
             "type": "string",
