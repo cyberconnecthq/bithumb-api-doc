@@ -1382,14 +1382,14 @@
             "AccessToken": []
           }
         ],
-        "description": "Returns top-200 tokens by market cap with AI scoring and ranking.\nIf tickers param is provided, returns only those tickers (intersected with top-200).",
+        "description": "Returns top-200 tokens by market cap with AI scoring and ranking.\nWhen `type` is provided, returns one shape for that template.\nWhen `type` is omitted, returns a single response keyed by all four templates (score_ranking / summary / comprehensive_evaluation / sentiment_trend).\nIf tickers param is provided, returns only those tickers (intersected with top-200) for every shape.",
         "tags": [
           "Market"
         ],
         "summary": "AI Recommended Assets",
         "parameters": [
           {
-            "description": "Date in YYYY-MM-DD format. Returns scores at KST 00:00 of the specified date. If not provided, returns the most recent data",
+            "description": "Date in YYYY-MM-DD format. Parsed for shape-compat but currently ignored — asset_summary's MAX(batch_sequence) is the source of truth.",
             "name": "date",
             "in": "query",
             "schema": {
@@ -1397,10 +1397,9 @@
             }
           },
           {
-            "description": "Prompt type (template key)",
+            "description": "Prompt type (template key). If omitted, all four templates are returned.",
             "name": "type",
             "in": "query",
-            "required": true,
             "schema": {
               "type": "string",
               "enum": [
@@ -1412,7 +1411,7 @@
             }
           },
           {
-            "description": "Tickers (comma separated, optional. e.g BTC,ETH). If omitted, returns all top-200 tokens by market cap",
+            "description": "Tickers (comma separated, e.g. BTC,ETH). If omitted, returns all top-200 tokens by market cap",
             "name": "tickers",
             "in": "query",
             "schema": {
@@ -1422,11 +1421,11 @@
         ],
         "responses": {
           "200": {
-            "description": "Returns AI recommended assets on success",
+            "description": "All templates keyed object when ?type is omitted",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/model.GenericResponse-model_AIRecommendedAssetsResponse"
+                  "$ref": "#/components/schemas/model.GenericResponse-model_AIRecommendedAssetsAllResponse"
                 }
               }
             }
@@ -1968,6 +1967,23 @@
           }
         }
       },
+      "model.AIRecommendedAssetsAllResponse": {
+        "type": "object",
+        "properties": {
+          "comprehensive_evaluation": {
+            "$ref": "#/components/schemas/model.AIRecommendedAssetsResponse"
+          },
+          "score_ranking": {
+            "$ref": "#/components/schemas/model.AIRecommendedAssetsResponse"
+          },
+          "sentiment_trend": {
+            "$ref": "#/components/schemas/model.AIRecommendedAssetsResponse"
+          },
+          "summary": {
+            "$ref": "#/components/schemas/model.AIRecommendedAssetsResponse"
+          }
+        }
+      },
       "model.AIRecommendedAssetsResponse": {
         "type": "object",
         "properties": {
@@ -2481,6 +2497,26 @@
           },
           "tenant_id": {
             "type": "string"
+          }
+        }
+      },
+      "model.GenericResponse-model_AIRecommendedAssetsAllResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/model.AIRecommendedAssetsAllResponse"
+          },
+          "error_code": {
+            "type": "string",
+            "example": "FORBIDDEN"
+          },
+          "message": {
+            "type": "string",
+            "example": "success"
+          },
+          "success": {
+            "type": "boolean",
+            "example": true
           }
         }
       },
