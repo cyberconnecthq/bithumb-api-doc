@@ -44,10 +44,8 @@ openapi: openapi.json GET /v1/market/ai-report
   provided, and as items in <code>reports[]</code> when it is omitted.
 </p>
 
-<h3 style={{ marginTop: 24, marginBottom: 8 }}>Identity & metadata</h3>
-
 <ResponseField name="ticker" type="string" required>
-  Bithumb exchange symbol, uppercase. Example: `BTC`, `XRP`, `XION`.
+  Bithumb exchange symbol, uppercase.
 </ResponseField>
 
 <ResponseField name="bithumb_rank" type="integer" required>
@@ -71,8 +69,6 @@ openapi: openapi.json GET /v1/market/ai-report
   </Note>
 </ResponseField>
 
-<h3 style={{ marginTop: 24, marginBottom: 8 }}>Headline content</h3>
-
 <ResponseField name="title.title" type="string" required>
   Korean headline derived from `summary.summary`. Length: **13–16 Korean characters**
   (validator: `validate_title_length_range(13, 16)`). Generic boilerplate such as
@@ -82,8 +78,6 @@ openapi: openapi.json GET /v1/market/ai-report
 
   <Note>
     On the wire this string is wrapped in a single-key object: `"title": { "title": "..." }`.
-    The wrapping is preserved for backward compatibility; an unwrap is being tracked in the
-    structured-output schema cleanup.
   </Note>
 </ResponseField>
 
@@ -94,8 +88,6 @@ openapi: openapi.json GET /v1/market/ai-report
 
   Wrapped on the wire as `"summary": { "summary": "..." }` (same caveat as `title.title` above).
 </ResponseField>
-
-<h3 style={{ marginTop: 24, marginBottom: 8 }}>Analysis blocks</h3>
 
 <ResponseField name="technical" type="object" required>
   Key chart / momentum interpretations across four fixed indicator slots.
@@ -131,8 +123,8 @@ openapi: openapi.json GET /v1/market/ai-report
       `* **현재 추세** / * **주요 가격대** / * **향후 관건**`.
 
       <Note>
-        Wire field is `summary`. The current `openapi.json` declares this field as `simple_summary`; the
-        upstream `huginn` schema is being reconciled.
+        BTC wire sample shows the field as `summary`; current `openapi.json` declares it as `simple_summary`.
+        Treat the wire as ground truth.
       </Note>
     </ResponseField>
   </Expandable>
@@ -186,8 +178,8 @@ openapi: openapi.json GET /v1/market/ai-report
       Korean prose summary of the on-chain section.
 
       <Note>
-        Wire field is `summary`. The current `openapi.json` declares it as `simple_summary`; mismatch with
-        upstream `huginn` is being reconciled.
+        BTC wire sample shows the field as `summary`; current `openapi.json` declares it as `simple_summary`.
+        Treat the wire as ground truth.
       </Note>
     </ResponseField>
   </Expandable>
@@ -216,20 +208,19 @@ openapi: openapi.json GET /v1/market/ai-report
           stays spaced.
 
           <Note>
-            The SRS specifies an additional `analysis` text field on this object (one Korean sentence
-            citing at least one `key_topic` and explaining *why* the score landed there). It is **not yet
-            present on the wire** — coming in a subsequent release.
+            SRS §2.9 specifies an additional `analysis` text field on this object (one Korean sentence
+            citing at least one `key_topic` and explaining *why* the score landed there). It is **not
+            present in the BTC wire sample**.
           </Note>
         </ResponseField>
       </Expandable>
     </ResponseField>
 
     <ResponseField name="key_topics" type="array of strings" required>
-      Up to **3** Korean topic strings driving the sentiment score. Each entry follows the form
-      `"<주제> — <설명> (심리 영향: ±N점)"`. Every entry must (a) influence the sentiment score and
-      (b) align with `overall_sentiment.label`.
+      Up to **3** Korean topic strings driving the sentiment score (per SRS §2.9). Every entry must
+      (a) influence the sentiment score and (b) align with `overall_sentiment.label`.
 
-      Example: `"가격 목표 논의 — 90K 달성 가능성에 대한 트레이더 의견 활발 (심리 영향: +12점)"`.
+      Example from BTC sample: `"가격 목표 논의 — 90K 달성 가능성에 대한 트레이더 의견 활발 (심리 영향: +12점)"`.
     </ResponseField>
   </Expandable>
 </ResponseField>
@@ -283,16 +274,6 @@ openapi: openapi.json GET /v1/market/ai-report
 </AccordionGroup>
 
 ---
-
-<h2 style={{ fontSize: "22px", marginBottom: 8 }}>Errors</h2>
-
-The endpoint returns a `BaseResponse` envelope (`success`, `error_code`, `message`) for non-2xx responses.
-
-| Status | Code | When |
-|---|---|---|
-| <span style={{color:"#d97706",fontWeight:600}}>● 400</span> | `INVALID_PARAMS` | `date` is not `YYYY-MM-DD` or `ticker` contains invalid characters. |
-| <span style={{color:"#d97706",fontWeight:600}}>● 404</span> | `NOT_FOUND` | `ticker` is not in the current Top-200 universe, or no snapshot exists for `date`. |
-| <span style={{color:"#dc2626",fontWeight:600}}>● 500</span> | `INTERNAL_ERROR` | Unexpected upstream failure (CMC fetch, DB read, model call). Retry with exponential backoff. |
 
 </div>
 
@@ -411,50 +392,6 @@ const report = await response.json();
     ],
     "overall_opinion": "MACD 골든 크로스와 RSI 중립이 단기 상승 동력을 제공함. OBV 하락과 낮은 거래대금이 상승 폭을 제한함."
   }
-}
-```
-
-```json 200 — all top-200
-{
-  "reports": [
-    {
-      "ticker": "BTC",
-      "bithumb_rank": 1,
-      "uid": "ai_report_BTC_20260507_1600",
-      "generated_at": "2026-05-07 17:31:06",
-      "title": { "title": "비트코인 골든크로스 진행 매수세 확대" },
-      "summary": { "summary": "- **비트코인(BTC)** 24시간 -0.03% 소폭 하락..." },
-      "technical": { "indicators": [/* 4 fixed slots */], "summary": "..." },
-      "onchain":   { "sector_group": { "name": "레이어1", "description": "..." }, "comprehensive_data": [/* dynamic */], "precautions": [], "outlook": "...", "summary": "..." },
-      "community": { "overall_sentiment": { "score": 68, "label": "긍정" }, "key_topics": [] },
-      "conclusion": { "positive_factors": [], "cautionary_factors": [], "overall_opinion": "..." }
-    }
-    // ... 199 more entries, one per top-200 asset
-  ]
-}
-```
-
-```json 400 — invalid params
-{
-  "success": false,
-  "error_code": "INVALID_PARAMS",
-  "message": "date must be YYYY-MM-DD"
-}
-```
-
-```json 404 — ticker not in top 200
-{
-  "success": false,
-  "error_code": "NOT_FOUND",
-  "message": "ticker 'PUMPBTC' is not in the current Top-200 universe"
-}
-```
-
-```json 500 — internal error
-{
-  "success": false,
-  "error_code": "INTERNAL_ERROR",
-  "message": "upstream CMC quote unavailable; retry with backoff"
 }
 ```
 

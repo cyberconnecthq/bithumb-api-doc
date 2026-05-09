@@ -64,23 +64,17 @@ shown in the table.
 
 The response is an array; each item has the same shape and represents one signal type.
 
-<h3 style={{ marginTop: 24, marginBottom: 8 }}>Identity & metadata</h3>
-
 <ResponseField name="type" type="string" required>
   Signal type key. One of the 17 catalogue keys above.
 </ResponseField>
 
 <ResponseField name="report_time" type="string" required>
-  Snapshot wall-clock in **Asia/Seoul (KST)**. Wire format: `YYYY-MM-DD HH:MM:SS`.
-  Aliased as `generated_at` in some surfaces.
+  Snapshot wall-clock for this signal's batch.
 </ResponseField>
 
 <ResponseField name="uid" type="string" required>
-  Document identifier. Format: `<type>_YYYYMMDD_HHMM` (KST), `HHMM` aligned to the 30-min cadence
-  (`HHMM ∈ {0000, 0030, 0100, ...}`).
+  Document identifier for this signal's batch.
 </ResponseField>
-
-<h3 style={{ marginTop: 24, marginBottom: 8 }}>Headline content</h3>
 
 <ResponseField name="title" type="string" required>
   Canonical Korean title from the catalogue above (or template-rendered for Q4/Q5). Never
@@ -91,14 +85,10 @@ The response is an array; each item has the same shape and represents one signal
   Korean prose, multi-bullet markdown. ≤4–5 lines. Bullets separated by `\n- ` for FE-side splitting.
 </ResponseField>
 
-<h3 style={{ marginTop: 24, marginBottom: 8 }}>Detailed analysis</h3>
-
 <ResponseField name="detailed_analysis" type="object" required>
   Structured Korean analysis content. The concrete key shape varies per question type — refer to the live
   response for the canonical fields returned by your `type`.
 </ResponseField>
-
-<h3 style={{ marginTop: 24, marginBottom: 8 }}>Conclusion</h3>
 
 <ResponseField name="conclusion_neutral_opinion" type="string" required>
   **Neutral** Korean synthesis combining positive and cautionary signals.
@@ -112,23 +102,15 @@ The response is an array; each item has the same shape and represents one signal
   Korean bullets — **cautionary evidence only**. No positive phrasing leaks.
 </ResponseField>
 
-<h3 style={{ marginTop: 24, marginBottom: 8 }}>Common metadata blocks</h3>
-
 <ResponseField name="feedback" type="object">
-  Common feedback metadata block (FE-rendered).
+  Common feedback metadata block.
 </ResponseField>
 
 <ResponseField name="share" type="object">
-  Common share metadata block (FE-rendered).
+  Common share metadata block.
 </ResponseField>
 
 ---
-
-<h2 style={{ fontSize: "22px", marginBottom: 8 }}>Errors</h2>
-
-| Status | Code | When |
-|---|---|---|
-| <span style={{color:"#dc2626",fontWeight:600}}>● 500</span> | `INTERNAL_ERROR` | Unexpected upstream failure. Retry with backoff. |
 
 </div>
 
@@ -160,47 +142,3 @@ const prompts = await response.json();
 
 </RequestExample>
 
-<ResponseExample>
-
-```json 200 — full array (up to 17 items)
-[
-  {
-    "type": "market_rise_fall_reason",
-    "report_time": "2026-05-09 17:30:00",
-    "uid": "market_rise_fall_reason_20260509_1730",
-    "title": "현재 시장의 상승/하락 이유는?",
-    "summary": "- 단기 매수세 우세하며 BTC ETF 자금 유입 지속됨\n- FOMC 의사록 매파 신호로 단기 변동성 확대 가능성",
-    "detailed_analysis": { /* shape varies per question type */ },
-    "conclusion_neutral_opinion": "단기 매수 동력은 우세하나 매크로 이벤트가 단기 방향성을 결정함.",
-    "conclusion_positive_factors": ["기관 매수세 견조함."],
-    "conclusion_cautionary_factors": ["FOMC 매파 신호 시 조정 압력 존재함."]
-  },
-  {
-    "type": "trending_issues",
-    "report_time": "2026-05-09 17:30:00",
-    "uid": "trending_issues_20260509_1730",
-    "title": "지금 시장에서 주목받는 이슈는?",
-    "summary": "- BTC ETF 5일 연속 자금 유입으로 단기 매수세 우세\n- FOMC 의사록 공개를 앞두고 변동성 확대 가능성\n- 솔라나 활성 사용자 회복으로 레이어1 모멘텀 강화",
-    "detailed_analysis": { /* shape varies per question type */ },
-    "conclusion_neutral_opinion": "단기 매수 동력은 우세하나 매크로 이벤트가 단기 방향성을 결정함.",
-    "conclusion_positive_factors": [
-      "BTC ETF 5일 연속 자금 유입으로 기관 수요 확인됨.",
-      "솔라나 활성 사용자 52만 명 회복으로 레이어1 사용성 견고함."
-    ],
-    "conclusion_cautionary_factors": [
-      "FOMC 의사록 매파 신호 시 단기 위험자산 조정 압력 존재함."
-    ]
-  }
-  // ... up to 17 entries total, in fixed canonical order Q1 → Q17
-]
-```
-
-```json 500 — internal error
-{
-  "success": false,
-  "error_code": "INTERNAL_ERROR",
-  "message": "unexpected upstream failure; retry with backoff"
-}
-```
-
-</ResponseExample>

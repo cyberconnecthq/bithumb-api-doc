@@ -23,15 +23,9 @@ openapi: openapi.json GET /v1/market/token-metrics
 
 <h3 style={{ marginTop: 20 }}>Metric coalesce order</h3>
 
-The pipeline tries each metric in order; the first available, non-zero series is returned.
+The pipeline tries each metric in priority order; the first available, non-zero series is returned:
 
-| Priority | `metric_id` | Korean | What it measures |
-|---|---|---|---|
-| 1 | `active_addresses_daily` | 일일 활성 주소 | Unique addresses transacting per day |
-| 2 | `transaction_count` | 거래 건수 | Number of on-chain transactions per day |
-| 3 | `tokenholders` | 토큰 보유자 수 | Distinct holding addresses |
-| 4 | `transaction_volume` | 거래량 | On-chain transferred value |
-| 5 *(fallback)* | `turnover_rate` | 회전율 | `transaction_volume / circulating supply` |
+`active_addresses_daily` → `transaction_count` → `tokenholders` → `transaction_volume` → `turnover_rate` (fallback).
 
 <Warning>
   All-zero series are rejected outright (e.g. the legacy HOOK regression). If every priority option returns
@@ -50,8 +44,6 @@ The pipeline tries each metric in order; the first available, non-zero series is
   Short Korean trend summary (~2–3 sentences) describing start → peak → end of the 30-day series, with a
   recent-slope note. **Empty string** when the series is too short to analyse or when the response is
   degraded (no fresh data).
-
-  Example: `"월초 X에서 4월 중순 Y 고점 후 5월 초 Z으로 둔화. 최근 5일 +1.2% 회복."`
 </ResponseField>
 
 <ResponseField name="metrics" type="array of objects" required>
@@ -63,29 +55,19 @@ The pipeline tries each metric in order; the first available, non-zero series is
       Same value across all 30 entries (single-metric series).
     </ResponseField>
     <ResponseField name="chain" type="string" required>
-      Chain identifier the metric is sourced from (Korean rendering applied where available).
-      Example: `"솔라나"`, `"이더리움"`, `"트론"`.
+      Chain identifier the metric is sourced from. Refer to the live response for actual values.
     </ResponseField>
     <ResponseField name="timestamp" type="string" required>
-      Day-aligned wall-clock in **Asia/Seoul (KST)**. Wire format: `YYYY-MM-DD HH:MM:SS`. Daily series
-      timestamps land at `00:00:00` KST.
+      Day-aligned wall-clock for the data point. Refer to the live response for the exact format and timezone.
     </ResponseField>
     <ResponseField name="value" type="number" required>
-      Numeric metric value for that day. Units depend on `metric_id`
-      (counts for `transaction_count` / `active_addresses_daily` / `tokenholders`,
-      currency value for `transaction_volume`, ratio for `turnover_rate`).
+      Numeric metric value for that day. Units are implied by `metric_id` — refer to the live response for
+      the actual scale and precision.
     </ResponseField>
   </Expandable>
 </ResponseField>
 
 ---
-
-<h2 style={{ fontSize: "22px", marginBottom: 8 }}>Errors</h2>
-
-| Status | Code | When |
-|---|---|---|
-| <span style={{color:"#d97706",fontWeight:600}}>● 400</span> | `INVALID_PARAMS` | `symbol` is missing or empty. |
-| <span style={{color:"#d97706",fontWeight:600}}>● 404</span> | `NOT_FOUND` | `symbol` is not in the current Top-200 universe. |
 
 </div>
 
@@ -118,43 +100,3 @@ const metrics = await response.json();
 
 </RequestExample>
 
-<ResponseExample>
-
-```json 200
-{
-  "symbol": "BTC",
-  "analysis": "월초 545,000건에서 4월 중순 612,000건 고점 후 5월 초 585,000건으로 둔화. 최근 5일 +1.2% 회복하며 안정 구간 진입.",
-  "metrics": [
-    { "metric_id": "active_addresses_daily", "chain": "비트코인", "timestamp": "2026-04-08 00:00:00", "value": 545210 },
-    { "metric_id": "active_addresses_daily", "chain": "비트코인", "timestamp": "2026-04-09 00:00:00", "value": 551048 },
-    { "metric_id": "active_addresses_daily", "chain": "비트코인", "timestamp": "2026-04-10 00:00:00", "value": 558112 }
-    // ... 27 more daily entries
-  ]
-}
-```
-
-```json 200 — degraded (cache fallback)
-{
-  "symbol": "BTC",
-  "analysis": "",
-  "metrics": [ /* 30 entries from last-known-good cache */ ]
-}
-```
-
-```json 400 — missing symbol
-{
-  "success": false,
-  "error_code": "INVALID_PARAMS",
-  "message": "symbol is required"
-}
-```
-
-```json 404 — symbol not in top 200
-{
-  "success": false,
-  "error_code": "NOT_FOUND",
-  "message": "symbol 'PUMPBTC' is not in the current Top-200 universe"
-}
-```
-
-</ResponseExample>

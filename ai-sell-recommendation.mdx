@@ -41,7 +41,7 @@ openapi: openapi.json GET /v1/market/ai-sell-recommendation
 <h2 style={{ fontSize: "22px", marginBottom: 8 }}>Response Attributes</h2>
 
 <ResponseField name="generated_at" type="string" required>
-  Snapshot wall-clock in **Asia/Seoul (KST)**. Wire format: `YYYY-MM-DD HH:MM:SS`.
+  Snapshot wall-clock in **Asia/Seoul (KST)**.
 </ResponseField>
 
 <ResponseField name="uid" type="string" required>
@@ -86,13 +86,6 @@ openapi: openapi.json GET /v1/market/ai-sell-recommendation
 
 ---
 
-<h2 style={{ fontSize: "22px", marginBottom: 8 }}>Errors</h2>
-
-| Status | Code | When |
-|---|---|---|
-| <span style={{color:"#d97706",fontWeight:600}}>● 404</span> | `NOT_FOUND` | No snapshot exists for `date`. |
-| <span style={{color:"#dc2626",fontWeight:600}}>● 500</span> | `INTERNAL_ERROR` | Unexpected upstream failure. Retry with backoff. |
-
 </div>
 
 <RequestExample>
@@ -123,49 +116,3 @@ const recommendations = await response.json();
 
 </RequestExample>
 
-<ResponseExample>
-
-```json 200
-{
-  "generated_at": "2026-05-07 17:00:00",
-  "uid": "sell_recommendation_20260507_1700",
-  "assets": [
-    {
-      "rank": 1,
-      "symbol": "EXAMPLE",
-      "name": "예시코인",
-      "image_url": "https://cdn.asksurf.ai/icons/example.png",
-      "uid": "sell_recommendation_EXAMPLE_20260507_1700",
-      "total_score": 2.3,
-      "score_by_category": {
-        "upside_energy": 1.5,
-        "trading_activity": 2.8,
-        "search_trend": 2.1,
-        "price_stability": 3.0,
-        "market_sentiment": 2.4,
-        "price_resilience": 2.0
-      },
-      "title": "지속적 약세, 거래량 위축 우려",
-      "summary": "- **상승에너지**: 7일 -8.2% 하락하며 매수세 부재가 두드러짐\n- **거래활성도**: 거래대금 30일 평균 0.4배로 유동성 위축\n- **시장심리**: 부정 키워드 비중 62%로 약세 분위기 지속"
-    }
-  ]
-}
-```
-
-```json 404 — no snapshot for date
-{
-  "success": false,
-  "error_code": "NOT_FOUND",
-  "message": "no snapshot found for date 2025-12-31"
-}
-```
-
-```json 500 — internal error
-{
-  "success": false,
-  "error_code": "INTERNAL_ERROR",
-  "message": "unexpected upstream failure; retry with backoff"
-}
-```
-
-</ResponseExample>

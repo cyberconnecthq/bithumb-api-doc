@@ -74,10 +74,10 @@ The top-level response is an object with **four sibling keys** — `score_rankin
   Full ranking with per-category ranks, opinion band, and Korean explanations per category.
   <Expandable title="envelope properties">
     <ResponseField name="uid" type="string" required>
-      Format: `ai_recommended_assets_score_ranking_YYYYMMDD_HHMM` (KST), `HHMM` aligned to hourly cadence (`HH00`).
+      Document identifier for this batch.
     </ResponseField>
     <ResponseField name="generated_at" type="string" required>
-      KST snapshot wall-clock, `YYYY-MM-DD HH:MM:SS`.
+      Snapshot wall-clock for this batch.
     </ResponseField>
     <ResponseField name="assets" type="array of objects" required>
       <Expandable title="per-asset properties">
@@ -154,12 +154,6 @@ The top-level response is an object with **four sibling keys** — `score_rankin
 
 ---
 
-<h2 style={{ fontSize: "22px", marginBottom: 8 }}>Errors</h2>
-
-| Status | Code | When |
-|---|---|---|
-| <span style={{color:"#dc2626",fontWeight:600}}>● 500</span> | `INTERNAL_ERROR` | Unexpected upstream failure. Retry with backoff. |
-
 </div>
 
 <RequestExample>
@@ -190,83 +184,3 @@ const data = await response.json();
 
 </RequestExample>
 
-<ResponseExample>
-
-```json 200 — full shape
-{
-  "score_ranking": {
-    "uid": "ai_recommended_assets_score_ranking_20260509_1700",
-    "generated_at": "2026-05-09 17:00:00",
-    "assets": [
-      {
-        "symbol": "BTC",
-        "name": "비트코인",
-        "image_url": "https://cdn.asksurf.ai/icons/btc.png",
-        "uid": "ai_recommended_assets_BTC_20260509_1700",
-        "total_score": 8.4,
-        "score_by_category": {
-          "upside_energy": 7.8, "trading_activity": 9.1, "search_trend": 8.7,
-          "price_stability": 8.0, "market_sentiment": 8.2, "price_resilience": 8.6
-        },
-        "overall_rank": 1,
-        "ranking_by_category": {
-          "upside_energy": 12, "trading_activity": 1, "search_trend": 3,
-          "price_stability": 18, "market_sentiment": 5, "price_resilience": 2
-        },
-        "opinion": "매우 강세",
-        "interpretation": {
-          "upside_energy": "최근 24시간 +2.4% 상승하며 단기 모멘텀이 양호함.",
-          "trading_activity": "거래대금 58조 원으로 시장 1위, 유동성 충분함.",
-          "search_trend": "주간 검색량 +18% 증가하며 대중 관심도 회복.",
-          "price_stability": "30일 표준편차 1.8%로 평균 수준 유지.",
-          "market_sentiment": "긍정 키워드 비중 68%로 우호적 분위기.",
-          "price_resilience": "지지선 1.18억 원에서 견조한 방어력 확인."
-        }
-      }
-      // ... 199 more
-    ]
-  },
-  "summary": {
-    "uid": "ai_recommended_assets_summary_20260509_1700",
-    "generated_at": "2026-05-09 17:00:00",
-    "assets": [
-      {
-        "symbol": "BTC", "name": "비트코인", "image_url": "...", "uid": "...",
-        "total_score": 8.4,
-        "score_by_category": { /* six fields */ },
-        "title": "관심 집중 강세장, 변동성 주의",
-        "summary": "- **상승에너지**: 24시간 +2.4% 상승하며 단기 매수세 유입 확인됨\n- **거래활성도**: 거래대금 58조 원으로 시장 1위 유지"
-      }
-      // ... 199 more
-    ]
-  },
-  "comprehensive_evaluation": {
-    "uid": "ai_recommended_assets_comprehensive_evaluation_20260509_1700",
-    "generated_at": "2026-05-09 17:00:00",
-    "assets": [ /* 200 entries with common fields */ ]
-  },
-  "sentiment_trend": {
-    "uid": "ai_recommended_assets_sentiment_trend_20260509_1700",
-    "generated_at": "2026-05-09 17:00:00",
-    "assets": [
-      {
-        "symbol": "BTC", "name": "비트코인", "image_url": "...", "uid": "...",
-        "total_score": 8.4,
-        "score_by_category": { /* six fields */ },
-        "bullish": 72, "bearish": 28, "sentiment_label": "긍정"
-      }
-      // ... filtered subset, sorted by bullish desc
-    ]
-  }
-}
-```
-
-```json 500 — internal error
-{
-  "success": false,
-  "error_code": "INTERNAL_ERROR",
-  "message": "unexpected upstream failure; retry with backoff"
-}
-```
-
-</ResponseExample>

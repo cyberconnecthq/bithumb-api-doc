@@ -36,8 +36,7 @@ openapi: openapi.json GET /v1/market/report
 <AccordionGroup>
   <Accordion title="Language, currency, timezone">
     All user-facing strings are **Korean**. Currency is **KRW (`원`)** with `만 / 억 / 조` magnitude
-    abbreviations. Timestamps are **Asia/Seoul (KST)**, wire format `YYYY-MM-DD HH:MM:SS`. UTC and USD
-    are forbidden in user-facing fields.
+    abbreviations. Timestamps are **Asia/Seoul (KST)**. UTC and USD are forbidden in user-facing fields.
   </Accordion>
 
   <Accordion title="Sector taxonomy (closed 14-sector enum)">
@@ -58,31 +57,22 @@ openapi: openapi.json GET /v1/market/report
 
 The top-level response contains **six sibling keys**, each corresponding to one market view.
 
-<h3 style={{ marginTop: 24, marginBottom: 8 }}>Market sentiment</h3>
-
 <ResponseField name="market_sentiment" type="object" required>
   Fear & Greed index, breadth counts (Up / Flat / Down), and gainer count vs previous day.
   <Expandable title="properties">
     <ResponseField name="report_time" type="string" required>
-      Reference time the snapshot represents (KST, `YYYY-MM-DD HH:MM:SS`). Sample-data validation runs
-      use canonical `YYYY-MM-DD 07:50`.
+      Reference time the snapshot represents (KST). Sample-data validation runs use canonical
+      `YYYY-MM-DD 07:50` (per SRS §5.1).
     </ResponseField>
     <ResponseField name="publish_time" type="string" required>
       Wall-clock when this section was promoted (KST).
     </ResponseField>
     <ResponseField name="fear_greed_index" type="integer" required>
-      Fear & Greed score. Range: `0`–`100` (higher = more greed).
-
-      | Range | Korean band |
-      |---|---|
-      | 0 – 24 | 극단적 공포 |
-      | 25 – 44 | 공포 |
-      | 45 – 55 | 중립 |
-      | 56 – 75 | 탐욕 |
-      | 76 – 100 | 극단적 탐욕 |
+      Fear & Greed score. Range: `0`–`100`. Banded into 5 categories: Extreme Fear / Fear / Neutral /
+      Greed / Extreme Greed.
     </ResponseField>
     <ResponseField name="fear_greed_interpretation" type="string" required>
-      Korean prose interpretation, ~1 sentence (음/슴체).
+      Korean prose interpretation of the index.
     </ResponseField>
     <ResponseField name="rising_assets_vs_previous_day" type="integer" required>
       Count of Bithumb-KRW assets whose 24-hour change is positive vs the prior day's snapshot.
@@ -94,11 +84,9 @@ The top-level response contains **six sibling keys**, each corresponding to one 
   </Expandable>
 </ResponseField>
 
-<h3 style={{ marginTop: 24, marginBottom: 8 }}>News digests</h3>
-
 <ResponseField name="must_know_news" type="array of objects" required>
   AI-highlighted macro/market news for quick daily context. Korean only. Each item:
-  `{ title, content, source, datetime, publish_time }` — all KST timestamps `YYYY-MM-DD HH:MM:SS`.
+  `{ title, content, source, datetime, publish_time }` (KST timestamps).
 </ResponseField>
 
 <ResponseField name="rise_tokens" type="array of objects" required>
@@ -111,13 +99,11 @@ The top-level response contains **six sibling keys**, each corresponding to one 
   `must_know_news`.
 </ResponseField>
 
-<h3 style={{ marginTop: 24, marginBottom: 8 }}>Trends & events</h3>
-
 <ResponseField name="key_trend_events" type="array of arrays of objects" required>
   **2-D structure.** Outer array contains multiple "versions" of the trend lineup; inner array is a
-  sequence of trend events for that version. Bithumb's FE selects one version to render.
+  sequence of trend events for that version.
 
-  Each inner item: `{ title, summary }` — both Korean (음/슴체).
+  Each inner item: `{ title, summary }` — Korean strings.
 </ResponseField>
 
 <ResponseField name="market_events" type="object" required>
@@ -126,19 +112,13 @@ The top-level response contains **six sibling keys**, each corresponding to one 
     <ResponseField name="datetime" type="string" required>Snapshot reference time (KST).</ResponseField>
     <ResponseField name="publish_time" type="string" required>Promotion wall-clock (KST).</ResponseField>
     <ResponseField name="major_events" type="array of objects" required>
-      At least 5 entries, ordered by event start time. Each item: `{ event_name, datetime }`. Limited to
-      Korean and US events (FOMC, earnings, regulatory milestones, etc.).
+      Minimum **5 events** by importance level (per SRS §5.3.3). Each item: `{ event_name, datetime }`.
+      Limited to **Korean and US events** (FOMC, interest-rate decisions, US/Korea earnings calendar, etc.).
     </ResponseField>
   </Expandable>
 </ResponseField>
 
 ---
-
-<h2 style={{ fontSize: "22px", marginBottom: 8 }}>Errors</h2>
-
-| Status | Code | When |
-|---|---|---|
-| <span style={{color:"#dc2626",fontWeight:600}}>● 500</span> | `INTERNAL_ERROR` | Unexpected upstream failure. Retry with backoff. |
 
 </div>
 
@@ -170,77 +150,3 @@ const report = await response.json();
 
 </RequestExample>
 
-<ResponseExample>
-
-```json 200
-{
-  "market_sentiment": {
-    "report_time": "2026-05-09 07:50:00",
-    "publish_time": "2026-05-09 07:48:30",
-    "fear_greed_index": 62,
-    "fear_greed_interpretation": "투자 심리가 점진적 회복 국면에 진입하며 단기 매수세가 우세한 것으로 판단됨.",
-    "rising_assets_vs_previous_day": 142,
-    "market_price_fluctuations": [
-      { "type": "UP", "num": 142 },
-      { "type": "FLAT", "num": 18 },
-      { "type": "DOWN", "num": 89 }
-    ]
-  },
-  "must_know_news": [
-    {
-      "title": "비트코인 ETF 하루 순유입 4,800억 원, 5일 연속 자금 유입",
-      "content": "미국 현물 비트코인 ETF에 5월 8일 4,800억 원 순유입이 기록되며 5일 연속 자금 유입이 확인됨.",
-      "source": "코인데스크 코리아",
-      "datetime": "2026-05-09 07:32:00",
-      "publish_time": "2026-05-09 07:48:30"
-    }
-  ],
-  "rise_tokens": [
-    {
-      "title": "솔라나 24시간 +6.8% 급등, DEX 거래량 30일 최고치",
-      "content": "솔라나가 24시간 +6.8% 상승하며 1조 8,000억 원 거래대금을 기록함.",
-      "source": "코인데스크 코리아",
-      "datetime": "2026-05-09 09:12:00",
-      "publish_time": "2026-05-09 17:48:30"
-    }
-  ],
-  "drop_tokens": [
-    {
-      "title": "도지코인 24시간 -5.2% 하락, 거래대금 7일 평균 0.4배",
-      "content": "도지코인이 24시간 -5.2% 하락하며 거래대금이 7일 평균의 0.4배로 위축됨.",
-      "source": "블록미디어",
-      "datetime": "2026-05-09 10:24:00",
-      "publish_time": "2026-05-09 17:48:30"
-    }
-  ],
-  "key_trend_events": [
-    [
-      {
-        "title": "FOMC 의사록 공개로 단기 변동성 확대 가능성",
-        "summary": "이번 주 공개되는 FOMC 의사록 매파적 신호가 우세할 경우 단기 위험자산 조정 압력이 확대될 수 있는 것으로 판단됨."
-      }
-    ]
-  ],
-  "market_events": {
-    "datetime": "2026-05-09 17:48:00",
-    "publish_time": "2026-05-09 17:48:30",
-    "major_events": [
-      { "event_name": "미국 FOMC 의사록 공개", "datetime": "2026-05-10 03:00:00" },
-      { "event_name": "한국은행 5월 금융통화위원회", "datetime": "2026-05-10 09:30:00" },
-      { "event_name": "엔비디아 1분기 실적 발표", "datetime": "2026-05-10 06:00:00" },
-      { "event_name": "비트코인 콘퍼런스 개막", "datetime": "2026-05-10 22:00:00" },
-      { "event_name": "미국 4월 소매판매 발표", "datetime": "2026-05-10 21:30:00" }
-    ]
-  }
-}
-```
-
-```json 500 — internal error
-{
-  "success": false,
-  "error_code": "INTERNAL_ERROR",
-  "message": "unexpected upstream failure; retry with backoff"
-}
-```
-
-</ResponseExample>
