@@ -1668,55 +1668,24 @@
             "AccessToken": []
           }
         ],
-        "description": "Returns one coalesced metric series for a Bithumb symbol. Preferred order is Token Terminal active_addresses_daily -> transaction_count -> tokenholders -> transaction_volume, and falls back to CoinGecko turnover_rate.",
+        "description": "Returns precomputed Token Terminal / CoinGecko metric\nseries for the Bithumb top-200 cohort. List shape; no\nper-symbol query path. Refreshed hourly by bithumb-job;\nKorean narrative refreshed daily 07:50 KST.",
         "tags": [
           "Market"
         ],
-        "summary": "Token Metrics",
-        "parameters": [
-          {
-            "description": "Bithumb symbol (e.g. BTC, ETH)",
-            "name": "symbol",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
+        "summary": "Token Metrics (precomputed top-200 list)",
         "responses": {
           "200": {
             "description": "OK",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/model.GenericResponse-model_TokenTerminalMetricsResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/model.BaseResponse"
+                  "$ref": "#/components/schemas/model.GenericResponse-model_TokenMetricsListResponse"
                 }
               }
             }
           },
           "401": {
             "description": "Unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/model.BaseResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not Found",
             "content": {
               "application/json": {
                 "schema": {
@@ -2765,11 +2734,11 @@
           }
         }
       },
-      "model.GenericResponse-model_TokenTerminalMetricsResponse": {
+      "model.GenericResponse-model_TokenMetricsListResponse": {
         "type": "object",
         "properties": {
           "data": {
-            "$ref": "#/components/schemas/model.TokenTerminalMetricsResponse"
+            "$ref": "#/components/schemas/model.TokenMetricsListResponse"
           },
           "error_code": {
             "type": "string",
@@ -3592,6 +3561,41 @@
           }
         }
       },
+      "model.TokenMetricsItem": {
+        "type": "object",
+        "properties": {
+          "analysis": {
+            "description": "Empty string when narrative hasn't run yet or the series is too\nshort. NEVER null — frontend already handles \"\".",
+            "type": "string"
+          },
+          "bithumb_rank": {
+            "type": "integer"
+          },
+          "metrics": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/model.TokenTerminalMetricPoint"
+            }
+          },
+          "symbol": {
+            "type": "string"
+          }
+        }
+      },
+      "model.TokenMetricsListResponse": {
+        "type": "object",
+        "properties": {
+          "generated_at": {
+            "type": "string"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/model.TokenMetricsItem"
+            }
+          }
+        }
+      },
       "model.TokenNewsItem": {
         "type": "object",
         "properties": {
@@ -3626,24 +3630,6 @@
           },
           "value": {
             "type": "number"
-          }
-        }
-      },
-      "model.TokenTerminalMetricsResponse": {
-        "type": "object",
-        "properties": {
-          "analysis": {
-            "description": "Analysis is a short Korean sentence summarising the 30-day trend\n(start → peak → end + recent slope). Empty string when the series\nis too short to analyse or the response is degraded (no data).\n2026-05-03 audit: chart used to return raw numbers only — frontend\nreaders had no narrative anchor; this field provides the \"월초 X에서\n4월 중순 Y 고점 후 5월 초 Z으로 둔화\" sentence.",
-            "type": "string"
-          },
-          "metrics": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/model.TokenTerminalMetricPoint"
-            }
-          },
-          "symbol": {
-            "type": "string"
           }
         }
       },

@@ -1,6 +1,6 @@
 ---
 title: Token Metrics
-description: Returns one coalesced metric series for a symbol.
+description: Precomputed metric series for the Bithumb top-200 cohort.
 openapi: openapi.json GET /v1/market/token-metrics
 ---
 
@@ -9,11 +9,32 @@ openapi: openapi.json GET /v1/market/token-metrics
 <h2 style={{ fontSize: "22px", marginBottom: 8 }}>Overview</h2>
 
 <p style={{ fontSize: 15, lineHeight: 1.8 }}>
-  The <strong>Token Metrics</strong> API returns a single coalesced metric series in
-  <code>data.metrics</code> for a given symbol.
+  The <strong>Token Metrics</strong> API returns a precomputed snapshot of the
+  Bithumb top-200 cohort in a single call. Each entry in <code>data.items</code>
+  carries one coalesced 30-day metric series plus a Korean narrative summary.
 </p>
 
-<h3 style={{ marginTop: 20 }}>Coalesce order</h3>
+<h3 style={{ marginTop: 20 }}>Response shape</h3>
+
+<ul style={{ fontSize: 15, lineHeight: 1.8 }}>
+  <li><code>data.generated_at</code> — freshness anchor for the whole snapshot
+    (<code>MAX(metrics_generated_at)</code> across the returned set).</li>
+  <li><code>data.items[].symbol</code> — Bithumb ticker (e.g. <code>BTC</code>).</li>
+  <li><code>data.items[].bithumb_rank</code> — rank by USD market cap within
+    the Bithumb KRW cohort (1 = largest).</li>
+  <li><code>data.items[].analysis</code> — Korean narrative summarising the
+    30-day trend. Empty string <code>""</code> if the series is too short or
+    the daily narrative pass hasn't run yet for a newly-promoted token.</li>
+  <li><code>data.items[].metrics</code> — array of points; one
+    <code>metric_id</code> series per item.</li>
+</ul>
+
+<h3 style={{ marginTop: 20 }}>Coalesce order (per item)</h3>
+
+<p style={{ fontSize: 15, lineHeight: 1.8 }}>
+  For each token, the writer picks the first non-empty Token Terminal series
+  in this order, falling back to CoinGecko if none qualify:
+</p>
 
 <ul style={{ fontSize: 15, lineHeight: 1.8 }}>
   <li><code>active_addresses_daily</code></li>
@@ -24,20 +45,44 @@ openapi: openapi.json GET /v1/market/token-metrics
 </ul>
 
 <Note>
-  A response may include many timestamps, but only one <code>metric_id</code> series
-  should appear in <code>data.metrics</code>.
+  All points within one item share the same <code>metric_id</code>. Different
+  items may have different <code>metric_id</code> values depending on which
+  series Token Terminal had data for; check <code>items[i].metrics[0].metric_id</code>
+  to see which one was selected.
 </Note>
+
+<h3 style={{ marginTop: 20 }}>Refresh cadence</h3>
+
+<ul style={{ fontSize: 15, lineHeight: 1.8 }}>
+  <li><strong>Hourly :10 UTC</strong> — metric series refreshed for all top-200.</li>
+  <li><strong>Daily 07:50 KST</strong> — Korean narratives regenerated for all top-200.</li>
+  <li><strong>Hourly :40 UTC</strong> — narratives gap-filled for newly-promoted top-200 entrants (≤ 1 h after promotion).</li>
+</ul>
 
 <h3 style={{ marginTop: 20 }}>How to use</h3>
 
 <Steps>
-  <Step title="Provide symbol">
-    Set <code>symbol</code> (required), for example <code>BTC</code> or <code>ETH</code>.
+  <Step title="Fetch the snapshot">
+    Call <code>GET /v1/market/token-metrics</code>. No query parameters required.
   </Step>
 
-  <Step title="Read selected series">
-    Use <code>metrics[0].metric_id</code> to identify which metric was selected by coalesce logic.
+  <Step title="Render in rank order">
+    <code>data.items</code> is sorted ascending by <code>bithumb_rank</code>.
+    Iterate to render cards or rows in cohort order.
+  </Step>
+
+  <Step title="Display the narrative">
+    Use <code>data.items[i].analysis</code> as the chart caption. Render a
+    placeholder if the value is empty (a newly-promoted token with no
+    narrative yet).
   </Step>
 </Steps>
+
+<Note>
+  A token currently in the top-200 with no metrics row yet (within the ≤ 1 h
+  gap window after a cohort reshuffle) is silently omitted from
+  <code>items</code>. Cardinality may dip below 200 briefly after a promotion
+  event; the next hourly refresh closes the gap.
+</Note>
 
 </div>
