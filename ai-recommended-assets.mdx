@@ -10,16 +10,16 @@ openapi: openapi.json GET /v1/market/ai-recommended-assets
 
 <p style={{ fontSize: 15, lineHeight: 1.8 }}>
   The <strong>AI Asset Recommendation</strong> API delivers ranked insights for crypto assets listed in the
-  <strong>Bithumb KRW</strong> market. It returns the <strong>top 200 tokens by market cap</strong> by default,
+  <strong>Bithumb KRW</strong> market. It returns the <strong>top 200 tokens by market cap</strong>,
   combining multi-dimensional scoring with AI-generated interpretation.
 </p>
 
 <p style={{ fontSize: 15, lineHeight: 1.8 }}>
-  Pass <code>type</code> to fetch a single response shape, or omit <code>type</code> to receive a single object keyed by all four shapes (<code>score_ranking</code>, <code>summary</code>, <code>comprehensive_evaluation</code>, <code>sentiment_trend</code>) in one call.
+  The response is a single object keyed by all four shapes (<code>score_ranking</code>, <code>summary</code>, <code>comprehensive_evaluation</code>, <code>sentiment_trend</code>) — described below.
 </p>
 
 <Note>
-  This endpoint returns a point-in-time snapshot. If <code>date</code> is omitted, the most recent snapshot is returned.
+  This endpoint returns a point-in-time snapshot of the most recent batch.
 </Note>
 
 <h3 style={{ marginTop: 20 }}>Variants</h3>
@@ -33,7 +33,11 @@ openapi: openapi.json GET /v1/market/ai-recommended-assets
   <li><code>/v1/market/ai-sell-recommendation</code> — sell recommendation (rank 151–200, score &lt; 6.0, lowest first)</li>
 </ul>
 
-<h3 style={{ marginTop: 20 }}>Response modes (type)</h3>
+<h3 style={{ marginTop: 20 }}>Response shapes</h3>
+
+<p style={{ fontSize: 15, lineHeight: 1.8 }}>
+  The response object contains four sibling keys, each holding the same <code>{`{ uid, generated_at, assets: [...] }`}</code> envelope but with a different per-asset shape:
+</p>
 
 <ul style={{ fontSize: 15, lineHeight: 1.8 }}>
   <li>
@@ -50,7 +54,7 @@ openapi: openapi.json GET /v1/market/ai-recommended-assets
   </li>
   <li>
     <strong>sentiment_trend</strong>: asset info + <code>bullish</code>, <code>bearish</code> (integer percentages, 0–100, sum = 100),
-    and <code>sentiment_label</code> (Korean label derived from bullish ratio).
+    and <code>sentiment_label</code> (Korean label derived from bullish ratio). Filtered to tokens with sentiment data; sorted bullish-percentage descending.
   </li>
 </ul>
 
@@ -71,30 +75,8 @@ openapi: openapi.json GET /v1/market/ai-recommended-assets
   </ul>
 </div>
 
-<h3 style={{ marginTop: 20 }}>How to use</h3>
-
-<Steps>
-  <Step title="Call without tickers (default)">
-    Omit <code>tickers</code> to receive data for <strong>all top-200 tokens</strong> sorted by score.
-  </Step>
-
-  <Step title="Or filter by specific tickers">
-    Pass <code>tickers</code> as a comma-separated list (e.g. <code>BTC,ETH,SOL</code>).
-    Only tokens within the market cap range of this endpoint are returned.
-  </Step>
-
-  <Step title="Pick a fetch mode">
-    Set <code>type</code> to one of <code>score_ranking</code>, <code>summary</code>, <code>comprehensive_evaluation</code>, <code>sentiment_trend</code> to receive a single response shape. Omit <code>type</code> to receive an object containing all four shapes in one call.
-  </Step>
-
-  <Step title="Optional: request a historical snapshot">
-    Provide <code>date</code> (YYYY-MM-DD). The backend treats it as KST 00:00 for that day.
-  </Step>
-</Steps>
-
 <Warning>
-  Unknown or out-of-range tickers are omitted. If certain data is unavailable, corresponding fields may be
-  <code>null</code> or omitted.
+  If certain data is unavailable, corresponding fields may be <code>null</code> or omitted.
 </Warning>
 
 </div>
