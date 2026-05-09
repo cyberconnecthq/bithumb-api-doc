@@ -12,7 +12,10 @@ openapi: openapi.json GET /v1/market/ai-recommended-assets
   The <strong>AI Asset Recommendation</strong> API delivers ranked insights for crypto assets listed in the
   <strong>Bithumb KRW</strong> market. It returns the <strong>top 200 tokens by market cap</strong> by default,
   combining multi-dimensional scoring with AI-generated interpretation.
-  The response shape depends on the <code>type</code> you request.
+</p>
+
+<p style={{ fontSize: 15, lineHeight: 1.8 }}>
+  Pass <code>type</code> to fetch a single response shape, or omit <code>type</code> to receive a single object keyed by all four shapes (<code>score_ranking</code>, <code>summary</code>, <code>comprehensive_evaluation</code>, <code>sentiment_trend</code>) in one call.
 </p>
 
 <Note>
@@ -80,9 +83,8 @@ openapi: openapi.json GET /v1/market/ai-recommended-assets
     Only tokens within the market cap range of this endpoint are returned.
   </Step>
 
-  <Step title="Choose a response type">
-    Set <code>type</code> (required) to one of: <code>score_ranking</code>, <code>summary</code>,
-    <code>comprehensive_evaluation</code>, <code>sentiment_trend</code>.
+  <Step title="Pick a fetch mode">
+    Set <code>type</code> to one of <code>score_ranking</code>, <code>summary</code>, <code>comprehensive_evaluation</code>, <code>sentiment_trend</code> to receive a single response shape. Omit <code>type</code> to receive an object containing all four shapes in one call.
   </Step>
 
   <Step title="Optional: request a historical snapshot">
