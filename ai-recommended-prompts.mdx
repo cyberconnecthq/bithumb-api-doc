@@ -1,6 +1,6 @@
 ---
 title: AI Recommended Prompts
-description: Returns structured AI analysis for a given signal type in the Bithumb KRW market—useful for quickly understanding market conditions, flows, and narratives.
+description: Returns structured AI analysis across all signal types in the Bithumb KRW market—useful for quickly understanding market conditions, flows, and narratives.
 openapi: openapi.json GET /v1/market/ai-recommended-prompts
 ---
 
@@ -10,18 +10,18 @@ openapi: openapi.json GET /v1/market/ai-recommended-prompts
 
 <p style={{ fontSize: 15, lineHeight: 1.8 }}>
   The <strong>AI Recommended Prompts</strong> API returns structured AI analysis for the <strong>Bithumb KRW</strong> crypto
-  market. Use it to quickly understand market conditions, asset movements,
+  market in a single call as an array. Use it to quickly understand market conditions, asset movements,
   capital flows, and emerging narratives.
 </p>
 
 <p style={{ fontSize: 15, lineHeight: 1.8 }}>
-  Pass <code>type</code> to fetch a single signal type as one object, or omit <code>type</code> to fetch all signal types in one call as an array (each item carries its own <code>type</code> field).
+  Each item in the response array carries a <code>type</code> field identifying which signal it represents.
 </p>
 
-<h3 style={{ marginTop: 20 }}>Available types</h3>
+<h3 style={{ marginTop: 20 }}>Signal types</h3>
 
 <p style={{ fontSize: 15, lineHeight: 1.8, marginBottom: 12 }}>
-  Below are the suggested questions for each <code>type</code>:
+  Each item in the response represents one of the following signals (the suggested user-facing question for each is shown):
 </p>
 
 <ul style={{ fontSize: 15, lineHeight: 1.8, listStyle: "none", paddingLeft: 0 }}>
@@ -44,17 +44,11 @@ openapi: openapi.json GET /v1/market/ai-recommended-prompts
   <li style={{ marginBottom: 12 }}><code>undervalued_asset</code><br />English: Which asset appears undervalued in the &#123;sector&#125;?<br />Korean: &#123;sector&#125;에서 저평가된 자산은?</li>
 </ul>
 
-<h3 style={{ marginTop: 20 }}>How to use</h3>
+<h3 style={{ marginTop: 20 }}>Response notes</h3>
 
-<Steps>
-  <Step title="Pick a fetch mode">
-    Set <code>type</code> to fetch one signal type as a single object, or omit <code>type</code> to fetch all signal types as an array. The all-types response preserves a fixed canonical order; signal types missing from the latest batch are skipped rather than nulled.
-  </Step>
-
-  <Step title="Optional: choose a date">
-    Provide <code>date</code> (YYYY-MM-DD) to view historical context. Default is the latest available snapshot.
-  </Step>
-</Steps>
+<p style={{ fontSize: 15, lineHeight: 1.8 }}>
+  The array preserves a fixed canonical order. Signal types missing from the latest batch are skipped rather than returned as <code>null</code>.
+</p>
 
 <Warning>
   Outputs are for informational purposes only and should not be interpreted as financial advice.

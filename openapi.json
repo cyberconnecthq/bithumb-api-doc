@@ -1382,46 +1382,14 @@
             "AccessToken": []
           }
         ],
-        "description": "Returns top-200 tokens by market cap with AI scoring and ranking.\nWhen `type` is provided, returns one shape for that template.\nWhen `type` is omitted, returns a single response keyed by all four templates (score_ranking / summary / comprehensive_evaluation / sentiment_trend).\nIf tickers param is provided, returns only those tickers (intersected with top-200) for every shape.",
+        "description": "Returns top-200 tokens by market cap with AI scoring and ranking, keyed by all four templates (score_ranking / summary / comprehensive_evaluation / sentiment_trend) in one response.",
         "tags": [
           "Market"
         ],
         "summary": "AI Recommended Assets",
-        "parameters": [
-          {
-            "description": "Date in YYYY-MM-DD format. Parsed for shape-compat but currently ignored — asset_summary's MAX(batch_sequence) is the source of truth.",
-            "name": "date",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "description": "Prompt type (template key). If omitted, all four templates are returned.",
-            "name": "type",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "enum": [
-                "score_ranking",
-                "summary",
-                "comprehensive_evaluation",
-                "sentiment_trend"
-              ]
-            }
-          },
-          {
-            "description": "Tickers (comma separated, e.g. BTC,ETH). If omitted, returns all top-200 tokens by market cap",
-            "name": "tickers",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
         "responses": {
           "200": {
-            "description": "All templates keyed object when ?type is omitted",
+            "description": "All templates keyed object",
             "content": {
               "application/json": {
                 "schema": {
@@ -1450,59 +1418,14 @@
             "AccessToken": []
           }
         ],
-        "description": "Returns structured AI analysis from the bithumb_reports table.\nWhen `type` is provided, returns a single object for that signal type.\nWhen `type` is omitted, returns an array of objects for all signal types in canonical order; missing types are skipped.",
+        "description": "Returns structured AI analysis from the bithumb_reports table for all signal types in one array.",
         "tags": [
           "Market"
         ],
         "summary": "AI Recommended Prompts",
-        "parameters": [
-          {
-            "description": "Date in YYYY-MM-DD format. If not provided, returns the most recent data",
-            "name": "date",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "description": "Signal type. If omitted, all types are returned as an array.",
-            "name": "type",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "enum": [
-                "undervalued_asset",
-                "sector_leaders",
-                "bullish_assets",
-                "stablecoin_inflows",
-                "asset_price_surge",
-                "kol_sectors",
-                "asset_price_decline",
-                "positive_news_top5",
-                "sentiment_divergence",
-                "kol_themes",
-                "trending_issues",
-                "golden_cross",
-                "exchange_outflows",
-                "top_active_chain",
-                "hottest_meme_coins",
-                "btc_etf_flow",
-                "market_rise_fall_reason"
-              ]
-            }
-          },
-          {
-            "description": "If true, serves the pre-polish base_report (raw model output) instead of post-polish ai_json_*.",
-            "name": "raw",
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          }
-        ],
         "responses": {
           "200": {
-            "description": "Single object when type is provided; array of objects when type is omitted",
+            "description": "Array of objects, one per signal type.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1694,24 +1617,6 @@
           "Market"
         ],
         "summary": "Market Report (aggregate)",
-        "parameters": [
-          {
-            "description": "Date in YYYY-MM-DD format. If date is not provided, returns the most recent data per section",
-            "name": "date",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "description": "If true, serves the pre-polish base_report (raw model output) instead of post-polish ai_json_*.",
-            "name": "raw",
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          }
-        ],
         "responses": {
           "200": {
             "description": "Returns aggregated market report on success",
@@ -2505,26 +2410,6 @@
         "properties": {
           "data": {
             "$ref": "#/components/schemas/model.AIRecommendedAssetsAllResponse"
-          },
-          "error_code": {
-            "type": "string",
-            "example": "FORBIDDEN"
-          },
-          "message": {
-            "type": "string",
-            "example": "success"
-          },
-          "success": {
-            "type": "boolean",
-            "example": true
-          }
-        }
-      },
-      "model.GenericResponse-model_AIRecommendedAssetsResponse": {
-        "type": "object",
-        "properties": {
-          "data": {
-            "$ref": "#/components/schemas/model.AIRecommendedAssetsResponse"
           },
           "error_code": {
             "type": "string",
