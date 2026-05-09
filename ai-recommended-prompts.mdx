@@ -10,8 +10,12 @@ openapi: openapi.json GET /v1/market/ai-recommended-prompts
 
 <p style={{ fontSize: 15, lineHeight: 1.8 }}>
   The <strong>AI Recommended Prompts</strong> API returns structured AI analysis for the <strong>Bithumb KRW</strong> crypto
-  market for a given <code>type</code> (signal type). Use it to quickly understand market conditions, asset movements,
+  market. Use it to quickly understand market conditions, asset movements,
   capital flows, and emerging narratives.
+</p>
+
+<p style={{ fontSize: 15, lineHeight: 1.8 }}>
+  Pass <code>type</code> to fetch a single signal type as one object, or omit <code>type</code> to fetch all signal types in one call as an array (each item carries its own <code>type</code> field).
 </p>
 
 <h3 style={{ marginTop: 20 }}>Available types</h3>
@@ -43,8 +47,8 @@ openapi: openapi.json GET /v1/market/ai-recommended-prompts
 <h3 style={{ marginTop: 20 }}>How to use</h3>
 
 <Steps>
-  <Step title="Choose a type">
-    Set <code>type</code> (required) as the signal type. Different types produce different structured outputs.
+  <Step title="Pick a fetch mode">
+    Set <code>type</code> to fetch one signal type as a single object, or omit <code>type</code> to fetch all signal types as an array. The all-types response preserves a fixed canonical order; signal types missing from the latest batch are skipped rather than nulled.
   </Step>
 
   <Step title="Optional: choose a date">
