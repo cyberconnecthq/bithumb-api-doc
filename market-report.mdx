@@ -43,7 +43,10 @@ sibling sections (field order below matches the wire sample):
   <Expandable title="item properties (in wire order)">
     <ResponseField name="title" type="string" required>Korean headline.</ResponseField>
     <ResponseField name="content" type="string" required>Korean article excerpt / supporting context.</ResponseField>
-    <ResponseField name="source" type="string" required>Publisher name (e.g. `"COINREADERS"`).</ResponseField>
+    <ResponseField name="source" type="string" required>
+      Source attribution. Wire sample shows real publisher names (e.g. `"COINREADERS"`) and internal
+      labels (e.g. `"업계 소식통"`).
+    </ResponseField>
     <ResponseField name="datetime" type="string" required>
       Article publish time, KST. Format: `YYYY-MM-DD HH:MM`.
     </ResponseField>
@@ -93,7 +96,8 @@ sibling sections (field order below matches the wire sample):
       `{ type: "UP" | "FLAT" | "DOWN", num: integer }`.
     </ResponseField>
     <ResponseField name="rising_assets_vs_previous_day" type="integer" required>
-      Count of Bithumb-KRW assets whose 24-hour change is positive vs the prior day's snapshot.
+      **Delta** in the count of rising assets vs the previous day's snapshot (signed integer). Wire
+      sample shows `2` (not the absolute count of rising assets).
     </ResponseField>
     <ResponseField name="fear_greed_vs_previous_day" type="integer" required>
       Change in `fear_greed_index` vs the previous day's snapshot (signed integer).
@@ -110,8 +114,8 @@ sibling sections (field order below matches the wire sample):
 </ResponseField>
 
 <ResponseField name="key_trend_events" type="array of arrays of objects" required>
-  **2-D structure.** Outer array contains multiple "versions" of the trend lineup; inner array is a
-  sequence of trend events for that version.
+  **2-D structure** (outer array of arrays). Wire sample contains a single outer entry with multiple
+  inner trend events.
 
   Each inner item: `{ title, summary }` — Korean strings.
 </ResponseField>
@@ -120,15 +124,16 @@ sibling sections (field order below matches the wire sample):
   Major upcoming KST-scheduled events.
   <Expandable title="properties (in wire order)">
     <ResponseField name="major_events" type="array of objects" required>
-      Minimum **5 events** by importance level (per SRS §5.3.3). Each item: `{ event_name, datetime }`
-      (KST `YYYY-MM-DD HH:MM`). Limited to **Korean and US events** (FOMC, interest-rate decisions,
-      US/Korea earnings calendar, etc.).
+      Each item: `{ event_name, datetime }` (KST `YYYY-MM-DD HH:MM`). SRS §5.3.3 requires minimum 5
+      events; wire sample observed with 3. Limited to **Korean and US events** (FOMC, interest-rate
+      decisions, US/Korea earnings calendar, etc.).
     </ResponseField>
     <ResponseField name="publish_time" type="string" required>
       Section promotion wall-clock, KST. Format: `YYYY-MM-DD HH:MM`.
     </ResponseField>
     <ResponseField name="event_influence" type="string" required>
-      Korean string describing the events' market impact.
+      Korean string. Wire sample shows a placeholder value (`"이벤트 영향도"`); semantic content not
+      yet confirmed.
     </ResponseField>
   </Expandable>
 </ResponseField>
