@@ -15,9 +15,7 @@ openapi: openapi.json GET /v1/market/ai-recommended-prompts
 </p>
 
 <Note>
-  Refresh: **every 30 minutes** (per SRS §3.1). Promotion completes ≥10 min before each cadence mark
-  (i.e. by `:20` and `:50`). The Bithumb FE displays 7 questions per session (3 fixed + 4 randomized
-  from the 14 variable types).
+  Refresh: **every 30 minutes**. Promotion completes ≥10 min before each cadence mark (by `:20` and `:50`).
 </Note>
 
 <Warning>
@@ -53,10 +51,10 @@ openapi: openapi.json GET /v1/market/ai-recommended-prompts
 <h2 style={{ fontSize: "22px", marginBottom: 8 }}>Response Attributes</h2>
 
 The endpoint returns the standard envelope `{ success, message, data }`. The `data` field is an array;
-each item is one signal type and has the shape below (per SRS §3.4).
+each item is one signal type and has the shape below.
 
 <ResponseField name="type" type="string" required>
-  Signal type key. One of the 17 catalogue keys above.
+  Signal type key. One of the 17 values listed in the table above.
 </ResponseField>
 
 <ResponseField name="report_time" type="string" required>
@@ -69,12 +67,11 @@ each item is one signal type and has the shape below (per SRS §3.4).
 </ResponseField>
 
 <ResponseField name="title" type="string" required>
-  Canonical Korean title from the §3.3 catalogue above (template-rendered for Q4/Q5 with `{가상자산명}`
-  substitution). **Never LLM-generated.**
+  Korean question title for the signal. `asset_price_surge` and `asset_price_decline` substitute `{가상자산명}` with the asset name. Always a fixed string.
 </ResponseField>
 
 <ResponseField name="summary" type="string" required>
-  Korean prose, multi-bullet markdown — ≤4–5 lines. Bullets separated by `\n- ` for FE-side splitting.
+  Korean prose, multi-bullet markdown — ≤4–5 lines. Bullets separated by `\n- `.
 </ResponseField>
 
 <ResponseField name="detailed_analysis" type="object" required>

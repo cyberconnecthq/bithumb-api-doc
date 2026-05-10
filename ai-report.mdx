@@ -26,7 +26,7 @@ openapi: openapi.json GET /v1/market/ai-report
     Refreshes every **4 hours** at KST `00 / 04 / 08 / 12 / 16 / 20`. Promotion to public read tables completes **≥10 minutes** before each cadence mark.
   </Card>
   <Card title="On-chain figures" icon="database">
-    Refresh **daily**. Market-cap / FDV / supply / 24h volume / TVL come from a single CMC quote pulled at `generated_at` (no double-fetch).
+    Refresh **daily**. Market-cap / FDV / supply / 24h volume / TVL reflect a single data snapshot taken at `generated_at`.
   </Card>
 </CardGroup>
 
@@ -76,17 +76,13 @@ openapi: openapi.json GET /v1/market/ai-report
 
   Example: `"비트코인 골든크로스 진행 매수세 확대"` (16자).
 
-  <Note>
-    On the wire this string is wrapped in a single-key object: `"title": { "title": "..." }`.
-  </Note>
+
 </ResponseField>
 
 <ResponseField name="summary.summary" type="string" required>
   Multi-bullet Korean markdown. Each bullet uses `\n- 헤드라인: 본문` form and synthesizes per-metric
   scores plus sentiment into prose. The first reference to an asset includes the Korean name and
   bracketed symbol (e.g. `**비트코인(BTC)**`).
-
-  Wrapped on the wire as `"summary": { "summary": "..." }` (same caveat as `title.title` above).
 </ResponseField>
 
 <ResponseField name="technical" type="object" required>
@@ -96,7 +92,7 @@ openapi: openapi.json GET /v1/market/ai-report
       **Always exactly 4 items in fixed order.** Dynamic per-asset selection is forbidden — the renderer
       cannot reorder.
 
-      | Slot | `name` (wire) | Indicator | Parameters |
+      | Slot | `name` | Indicator | Parameters |
       |---|---|---|---|
       | ① 거래량 | `거래량 - OBV` | On-Balance Volume | — |
       | ② 변동성 | `변동성 - 볼린저 밴드` | Bollinger Bands | (20, 2) |
@@ -122,10 +118,6 @@ openapi: openapi.json GET /v1/market/ai-report
       Multi-bullet Korean synthesis across the four indicators, organized as
       `* **현재 추세** / * **주요 가격대** / * **향후 관건**`.
 
-      <Note>
-        BTC wire sample shows the field as `summary`; current `openapi.json` declares it as `simple_summary`.
-        Treat the wire as ground truth.
-      </Note>
     </ResponseField>
   </Expandable>
 </ResponseField>
@@ -149,9 +141,7 @@ openapi: openapi.json GET /v1/market/ai-report
     </ResponseField>
 
     <ResponseField name="comprehensive_data" type="array of objects" required>
-      Sector-aware on-chain metric blocks. **Keys are dynamic per token** — the SRS-illustrative names
-      (`market_valuation`, `network_health`, `infrastructure_stability`, `development_ecosystem`) are
-      examples, **not exhaustive**.
+      Sector-aware on-chain metric blocks. **Keys are dynamic per token**. Examples: `market_valuation`, `network_health`, `infrastructure_stability`, `development_ecosystem`.
       <Expandable title="item properties">
         <ResponseField name="title_ko" type="string" required>
           Korean section heading rendered by the front-end. Examples: `"시장 가치 평가"`,
@@ -177,10 +167,6 @@ openapi: openapi.json GET /v1/market/ai-report
     <ResponseField name="summary" type="string" required>
       Korean prose summary of the on-chain section.
 
-      <Note>
-        BTC wire sample shows the field as `summary`; current `openapi.json` declares it as `simple_summary`.
-        Treat the wire as ground truth.
-      </Note>
     </ResponseField>
   </Expandable>
 </ResponseField>
@@ -216,8 +202,8 @@ openapi: openapi.json GET /v1/market/ai-report
     </ResponseField>
 
     <ResponseField name="key_topics" type="array of strings" required>
-      Up to **3** Korean topic strings driving the sentiment score (per SRS §2.9). Every entry must
-      (a) influence the sentiment score and (b) align with `overall_sentiment.label`.
+      Up to **3** Korean topic strings driving the sentiment score. Every entry must
+      (a) influence the sentiment score and (b) align with `overall_sentiment.grade`.
 
       Example from BTC sample: `"가격 목표 논의 — 90K 달성 가능성에 대한 트레이더 의견 활발 (심리 영향: +12점)"`.
     </ResponseField>

@@ -21,7 +21,7 @@ openapi: openapi.json GET /v1/market/ai-buy-recommendation
 
 <Warning>
   All score fields render with **exactly one decimal place** including trailing zero (`7.0`, `10.0`) — never
-  bare integers. The Mintlify viewer may drop the trailing `.0` cosmetically; the wire bytes are correct.
+  bare integers. The Mintlify viewer may drop the trailing `.0` cosmetically; the actual response values are correct.
 </Warning>
 
 <h3 style={{ marginTop: 20 }}>Cadence & freshness</h3>
@@ -65,7 +65,7 @@ openapi: openapi.json GET /v1/market/ai-buy-recommendation
       Per-asset document ID. Format: `buy_recommendation_<SYMBOL>_YYYYMMDD_HHMM` (KST).
     </ResponseField>
     <ResponseField name="rank" type="integer" required>
-      Position within this view, `1`-based. `rank = 1` is the highest-scoring asset returned by this endpoint.
+      Position within this view, `1`–`50`. `rank = 1` is the highest-scoring asset returned by this endpoint.
     </ResponseField>
     <ResponseField name="total_score" type="number" required>
       Overall score `6.0`–`10.0` (filter: `≥ 6.0`), one decimal place.

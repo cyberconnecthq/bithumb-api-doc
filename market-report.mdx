@@ -35,10 +35,9 @@ openapi: openapi.json GET /v1/market/report
 
 <h2 style={{ fontSize: "22px", marginBottom: 8 }}>Response Attributes</h2>
 
-The endpoint returns the standard envelope `{ success, message, data }`. The `data` object contains six
-sibling sections (field order below matches the wire sample).
+The endpoint returns the standard envelope `{ success, message, data }`. The `data` object contains six sibling sections.
 
-`must_know_news`, `rise-tokens`, and `drop-tokens` are all **Key News** sections (SRS §5.3.2).
+`must_know_news`, `rise-tokens`, and `drop-tokens` are all **Key News** sections.
 `rise-tokens` and `drop-tokens` share the same item shape and both include a `symbol` field.
 `must_know_news` (AI-Featured Articles) has no `symbol`.
 
@@ -84,7 +83,7 @@ sibling sections (field order below matches the wire sample).
 
 <ResponseField name="market_sentiment" type="object" required>
   Fear & Greed index, breadth counts (Up / Flat / Down), and gainer count vs previous day.
-  <Expandable title="properties (in wire order)">
+  <Expandable title="properties">
     <ResponseField name="fear_greed_index" type="integer" required>
       Fear & Greed score. Range: `0`–`100`. Banded into 5 categories: Extreme Fear / Fear / Neutral /
       Greed / Extreme Greed.
@@ -106,10 +105,9 @@ sibling sections (field order below matches the wire sample).
 
 <ResponseField name="market_events" type="object" required>
   Major upcoming KST-scheduled events.
-  <Expandable title="properties (in wire order)">
+  <Expandable title="properties">
     <ResponseField name="major_events" type="array of objects" required>
-      Each item: `{ event_name, datetime }` (KST `YYYY-MM-DD HH:MM`). SRS §5.3.3 requires minimum 5
-      events; wire sample observed with 3. Limited to **Korean and US events** (FOMC, interest-rate
+      Each item: `{ event_name, datetime }` (KST `YYYY-MM-DD HH:MM`). Limited to **Korean and US events** (FOMC, interest-rate
       decisions, US/Korea earnings calendar, etc.).
     </ResponseField>
     <ResponseField name="publish_time" type="string" required>

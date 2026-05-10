@@ -15,14 +15,12 @@ openapi: openapi.json GET /v1/market/ai-sell-recommendation
 </p>
 
 <Note>
-  The threshold is **`< 4.0`**, not the SRS PDF's "below 6.0" wording. This was overridden by QA reviewer
-  request (`요구사항 변경(매도 추천 시 중립제외)`) — neutrals (4.0–5.9) are explicitly excluded from
-  the sell list. Boundary lock: `TestSellRecommendation_ScoreBoundaryExcludesAtFour`.
+  Neutrals (`4.0`–`5.9`) are excluded. Only assets with `total_score < 4.0` appear on the sell list.
 </Note>
 
 <Warning>
   All score fields render with **exactly one decimal place** including trailing zero (`3.0`, `2.5`) — never
-  bare integers. The Mintlify viewer may drop the trailing `.0` cosmetically; the wire bytes are correct.
+  bare integers. The Mintlify viewer may drop the trailing `.0` cosmetically; the actual response values are correct.
 </Warning>
 
 <h3 style={{ marginTop: 20 }}>Cadence & freshness</h3>
@@ -64,7 +62,7 @@ openapi: openapi.json GET /v1/market/ai-sell-recommendation
       Per-asset document ID. Format: `sell_recommendation_<SYMBOL>_YYYYMMDD_HHMM` (KST).
     </ResponseField>
     <ResponseField name="rank" type="integer" required>
-      Position within this view, `1`-based. `rank = 1` is the lowest-scoring (weakest) asset.
+      Position within this view, `1`–`50`. `rank = 1` is the lowest-scoring (weakest) asset.
     </ResponseField>
     <ResponseField name="total_score" type="number" required>
       Overall score `0.0`–`3.9` (filter: `< 4.0`), one decimal place.

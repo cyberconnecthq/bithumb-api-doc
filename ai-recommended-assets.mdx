@@ -47,7 +47,7 @@ Total Score = `Round(Average(6 metric scores), 1)`, range `0.0`–`10.0`. Each c
 | `price_resilience` | 가격방어력 | Price Resilience | How well price holds support against drops |
 
 <Warning>
-  All score fields render with **exactly one decimal place** including trailing zero — `7.0`, `10.0`, `3.0`, never `7` / `10` / `3`. The Mintlify viewer may drop the trailing `.0` cosmetically; the wire bytes are correct.
+  All score fields render with **exactly one decimal place** including trailing zero — `7.0`, `10.0`, `3.0`, never `7` / `10` / `3`. The Mintlify viewer may drop the trailing `.0` cosmetically; the actual response values are correct.
 </Warning>
 
 <h3 style={{ marginTop: 20 }}>Score-to-opinion bands</h3>
@@ -88,7 +88,7 @@ The top-level response is an object with **four sibling keys** — `score_rankin
         <ResponseField name="symbol" type="string" required>Bithumb exchange symbol (uppercase).</ResponseField>
         <ResponseField name="name" type="string" required>Korean asset name.</ResponseField>
         <ResponseField name="image_url" type="string" required>Asset icon URL.</ResponseField>
-        <ResponseField name="overall_rank" type="integer" required>Rank within the scored universe, `1`-based.</ResponseField>
+        <ResponseField name="overall_rank" type="integer" required>Rank within the scored universe, `1`–`200`.</ResponseField>
         <ResponseField name="total_score" type="number" required>Overall score `0.0`–`10.0`, one decimal place.</ResponseField>
         <ResponseField name="score_by_category" type="object" required>
           Six metric scores. Keys: `upside_energy / trading_activity / search_trend / price_stability /
