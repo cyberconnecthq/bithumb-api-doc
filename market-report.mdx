@@ -86,37 +86,22 @@ sibling sections (field order below matches the wire sample).
   Fear & Greed index, breadth counts (Up / Flat / Down), and gainer count vs previous day.
   <Expandable title="properties (in wire order)">
     <ResponseField name="fear_greed_index" type="integer" required>
-      Fear & Greed score. Range: `0`–`100`. Banded into 5 categories per SRS §5.3.1: Extreme Fear / Fear /
-      Neutral / Greed / Extreme Greed.
-    </ResponseField>
-    <ResponseField name="fear_greed_interpretation" type="string" required>
-      Korean keyword label for the band. Wire sample shows the bare keyword (e.g. `"중립"`), not a
-      sentence.
+      Fear & Greed score. Range: `0`–`100`. Banded into 5 categories: Extreme Fear / Fear / Neutral /
+      Greed / Extreme Greed.
     </ResponseField>
     <ResponseField name="market_price_fluctuations" type="array of objects" required>
-      Breadth counts — typically 3 entries (Up / Flat / Down). Each item:
+      Up / Flat / Down counts for all coins on the Bithumb KRW market. Each item:
       `{ type: "UP" | "FLAT" | "DOWN", num: integer }`.
     </ResponseField>
     <ResponseField name="rising_assets_vs_previous_day" type="integer" required>
-      **Delta** in the count of rising assets vs the previous day's snapshot (signed integer). Wire
-      sample shows `2` (not the absolute count of rising assets).
-    </ResponseField>
-    <ResponseField name="report_time" type="string" required>
-      Reference time the snapshot represents, KST. Wire sample uses **dot-separated** date format:
-      `YYYY.MM.DD HH:MM`.
-    </ResponseField>
-    <ResponseField name="publish_time" type="string" required>
-      Section promotion wall-clock, KST. Wire sample uses **hyphen-separated** date format:
-      `YYYY-MM-DD HH:MM`.
+      Number of gainers vs the previous day (signed integer).
     </ResponseField>
   </Expandable>
 </ResponseField>
 
 <ResponseField name="key_trend_events" type="array of arrays of objects" required>
-  **2-D structure** (outer array of arrays). Wire sample contains a single outer entry with multiple
-  inner trend events.
-
-  Each inner item: `{ title, summary }` — Korean strings.
+  Key macroeconomic and market trend events. 2-D structure — outer array of groups, each group an array
+  of trend items. Each item: `{ title, summary }` — Korean strings.
 </ResponseField>
 
 <ResponseField name="market_events" type="object" required>
@@ -195,15 +180,12 @@ const report = await response.json();
     ],
     "market_sentiment": {
       "fear_greed_index": 46,
-      "fear_greed_interpretation": "중립",
       "market_price_fluctuations": [
         { "type": "UP", "num": 26 },
         { "type": "FLAT", "num": 388 },
         { "type": "DOWN", "num": 32 }
       ],
-      "rising_assets_vs_previous_day": 2,
-      "report_time": "2026.05.06 07:50",
-      "publish_time": "2026-05-06 07:50"
+      "rising_assets_vs_previous_day": 2
     },
     "key_trend_events": [
       [
