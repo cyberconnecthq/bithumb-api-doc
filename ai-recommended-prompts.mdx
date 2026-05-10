@@ -28,11 +28,7 @@ openapi: openapi.json GET /v1/market/ai-recommended-prompts
 
 <h2 style={{ fontSize: "22px", marginBottom: 8 }}>Signal types (17)</h2>
 
-The 17 catalogue keys per SRS §3.3 (3 fixed + 14 variable). The "Suggested question" column comes from
-SRS §3.3 — these strings are **not transmitted on the wire**; they are the canonical user-facing prompts
-the FE renders as cards.
-
-| # | `type` | Group | Suggested question (per SRS §3.3) |
+| # | `type` | Group | Question |
 |---|---|---|---|
 | 1 | `market_rise_fall_reason` | Fixed | `현재 시장의 상승/하락 이유는?` |
 | 2 | `bullish_assets` | Fixed | `상승추세를 보이는 자산은?` |
