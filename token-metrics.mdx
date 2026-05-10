@@ -1,6 +1,6 @@
 ---
 title: Token Metrics
-description: 30-day daily on-chain metric series for a Bithumb-listed asset, with a Korean trend summary.
+description: Precomputed metric series for the Bithumb top-200 cohort.
 openapi: openapi.json GET /v1/market/token-metrics
 ---
 
@@ -9,62 +9,80 @@ openapi: openapi.json GET /v1/market/token-metrics
 <h2 style={{ fontSize: "22px", marginBottom: 8 }}>Overview</h2>
 
 <p style={{ fontSize: 15, lineHeight: 1.8 }}>
-  The <strong>Token Metrics</strong> API returns a single coalesced on-chain metric series spanning the last
-  30 days for a given <code>symbol</code>, plus a Korean trend summary. The metric is selected per asset
-  based on data availability — the first available metric in the priority order below is returned, never
-  with all-zero values.
+  The <strong>Token Metrics</strong> API returns a precomputed snapshot of the
+  Bithumb top-200 cohort in a single call. Each entry in <code>data.items</code>
+  carries one coalesced 30-day metric series plus a Korean narrative summary.
 </p>
 
+<h3 style={{ marginTop: 20 }}>Response shape</h3>
+
+<ul style={{ fontSize: 15, lineHeight: 1.8 }}>
+  <li><code>data.generated_at</code> — freshness anchor for the whole snapshot
+    (<code>MAX(metrics_generated_at)</code> across the returned set).</li>
+  <li><code>data.items[].symbol</code> — Bithumb ticker (e.g. <code>BTC</code>).</li>
+  <li><code>data.items[].bithumb_rank</code> — rank by USD market cap within
+    the Bithumb KRW cohort (1 = largest).</li>
+  <li><code>data.items[].analysis</code> — Korean narrative summarising the
+    30-day trend. Empty string <code>""</code> if the series is too short or
+    the daily narrative pass hasn't run yet for a newly-promoted token.</li>
+  <li><code>data.items[].metrics</code> — array of points; one
+    <code>metric_id</code> series per item.</li>
+</ul>
+
+<h3 style={{ marginTop: 20 }}>Coalesce order (per item)</h3>
+
+<p style={{ fontSize: 15, lineHeight: 1.8 }}>
+  For each token, the first available non-empty series is selected in this order:
+</p>
+
+<ul style={{ fontSize: 15, lineHeight: 1.8 }}>
+  <li><code>active_addresses_daily</code></li>
+  <li><code>transaction_count</code></li>
+  <li><code>tokenholders</code></li>
+  <li><code>transaction_volume</code></li>
+  <li>Fallback: <code>turnover_rate</code></li>
+</ul>
+
 <Note>
-  The series is **always exactly 30 entries** covering `[generated_at - 30d, generated_at]`.
+  All points within one item share the same <code>metric_id</code>. Different
+  items may have different <code>metric_id</code> values depending on data
+  availability; check <code>items[i].metrics[0].metric_id</code>
+  to see which one was selected.
 </Note>
 
-<h3 style={{ marginTop: 20 }}>Metric coalesce order</h3>
+<h3 style={{ marginTop: 20 }}>Refresh cadence</h3>
 
-The pipeline tries each metric in priority order; the first available, non-zero series is returned:
+<ul style={{ fontSize: 15, lineHeight: 1.8 }}>
+  <li><strong>Hourly :10 UTC</strong> — metric series refreshed for all top-200.</li>
+  <li><strong>Daily 07:50 KST</strong> — Korean narratives regenerated for all top-200.</li>
+  <li><strong>Hourly :40 UTC</strong> — narratives gap-filled for newly-promoted top-200 entrants (≤ 1 h after promotion).</li>
+</ul>
 
-`active_addresses_daily` → `transaction_count` → `tokenholders` → `transaction_volume` → `turnover_rate` (fallback).
+<h3 style={{ marginTop: 20 }}>How to use</h3>
 
-<Warning>
-  All-zero series are rejected outright (e.g. the legacy HOOK regression). If every priority option returns
-  zeros, the response falls back to the cached `degraded` payload.
-</Warning>
+<Steps>
+  <Step title="Fetch the snapshot">
+    Call <code>GET /v1/market/token-metrics</code>. No query parameters required.
+  </Step>
 
----
+  <Step title="Render in rank order">
+    <code>data.items</code> is sorted ascending by <code>bithumb_rank</code>.
+    Iterate to render cards or rows in cohort order.
+  </Step>
 
-<h2 style={{ fontSize: "22px", marginBottom: 8 }}>Response Attributes</h2>
+  <Step title="Display the narrative">
+    Use <code>data.items[i].analysis</code> as the chart caption. Render a
+    placeholder if the value is empty (a newly-promoted token with no
+    narrative yet).
+  </Step>
+</Steps>
 
-<ResponseField name="symbol" type="string" required>
-  Bithumb exchange symbol echoed back from the request (uppercase).
-</ResponseField>
-
-<ResponseField name="generated_at" type="string" required>
-  Snapshot wall-clock used as the series anchor (KST ISO 8601). The 30-entry window is
-  `[generated_at − 30d, generated_at]`.
-</ResponseField>
-
-<ResponseField name="analysis" type="string" required>
-  Short Korean trend summary (~2–3 sentences) describing the 30-day series.
-</ResponseField>
-
-<ResponseField name="metrics" type="array of objects" required>
-  Always exactly 30 items, oldest to newest. Each item:
-  <Expandable title="properties">
-    <ResponseField name="metric_id" type="string" required>
-      Identifier of the selected metric. One of:
-      `active_addresses_daily`, `transaction_count`, `tokenholders`, `transaction_volume`, `turnover_rate`.
-      Same value across all 30 entries.
-    </ResponseField>
-    <ResponseField name="timestamp" type="string" required>
-      Day-aligned wall-clock for the data point.
-    </ResponseField>
-    <ResponseField name="value" type="number" required>
-      Numeric metric value for that day.
-    </ResponseField>
-  </Expandable>
-</ResponseField>
-
----
+<Note>
+  A token currently in the top-200 with no metrics row yet (within the ≤ 1 h
+  gap window after a cohort reshuffle) is silently omitted from
+  <code>items</code>. Cardinality may dip below 200 briefly after a promotion
+  event; the next hourly refresh closes the gap.
+</Note>
 
 </div>
 
@@ -72,7 +90,7 @@ The pipeline tries each metric in priority order; the first available, non-zero 
 
 ```bash cURL
 curl --request GET \
-  --url "https://api.asksurf.ai/surf-ai/v1/market/token-metrics?symbol=BTC" \
+  --url "https://api.asksurf.ai/surf-ai/v1/market/token-metrics" \
   --header "Authorization: <api-key>"
 ```
 
@@ -81,7 +99,6 @@ import requests
 
 response = requests.get(
     "https://api.asksurf.ai/surf-ai/v1/market/token-metrics",
-    params={"symbol": "BTC"},
     headers={"Authorization": "<api-key>"},
 )
 metrics = response.json()
@@ -89,11 +106,10 @@ metrics = response.json()
 
 ```javascript JavaScript
 const response = await fetch(
-  "https://api.asksurf.ai/surf-ai/v1/market/token-metrics?symbol=BTC",
+  "https://api.asksurf.ai/surf-ai/v1/market/token-metrics",
   { headers: { Authorization: "<api-key>" } },
 );
 const metrics = await response.json();
 ```
 
 </RequestExample>
-
