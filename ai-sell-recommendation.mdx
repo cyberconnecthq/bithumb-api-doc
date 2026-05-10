@@ -70,7 +70,7 @@ openapi: openapi.json GET /v1/market/ai-sell-recommendation
       Overall score `0.0`–`3.9` (filter: `< 4.0`), one decimal place.
     </ResponseField>
     <ResponseField name="score_by_category" type="object" required>
-      Object with the six number keys `bullish_momentum / trading_activity / search_trends / price_stability /
+      Object with the six number keys `upside_energy / trading_activity / search_trend / price_stability /
       market_sentiment / price_resilience`. Each `0.0`–`10.0`, one decimal place. Korean labels and
       definitions match the [AI Recommended Assets scoring model](/ai-recommended-assets#the-six-metric-scoring-model).
     </ResponseField>

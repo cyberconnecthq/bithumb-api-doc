@@ -39,9 +39,9 @@ Total Score = `Round(Average(6 metric scores), 1)`, range `0.0`–`10.0`. Each c
 
 | Wire key | Korean (rendered) | English | Definition |
 |---|---|---|---|
-| `bullish_momentum` | 상승에너지 | Bullish Momentum | Price momentum |
+| `upside_energy` | 상승에너지 | Bullish Momentum | Price momentum |
 | `trading_activity` | 거래활성도 | Trading Activity | Total trading volume |
-| `search_trends` | 검색트렌드 | Search Trends | Public interest (search volume) |
+| `search_trend` | 검색트렌드 | Search Trends | Public interest (search volume) |
 | `price_stability` | 가격안정성 | Price Stability | Inverse of volatility (higher = more stable) |
 | `market_sentiment` | 시장심리 | Market Sentiment | News + community + social media |
 | `price_resilience` | 가격방어력 | Price Resilience | How well price holds support against drops |
@@ -71,37 +71,38 @@ The top-level response is an object with **four sibling keys** — `score_rankin
 (`{ uid, generated_at, assets: [...] }`) but with a different per-asset shape.
 
 <ResponseField name="score_ranking" type="object" required>
-  Full ranking with per-category ranks, opinion band, and Korean explanations per category.
+  Full ranking with per-category scores, ranks, opinion, and Korean interpretations.
   <Expandable title="envelope properties">
-    <ResponseField name="uid" type="string" required>
-      Document identifier for this batch.
+    <ResponseField name="uid" type="string | null" required>
+      Batch identifier. Format: `score_ranking_YYYYMMDD_HHMM` (KST). `null` when no promoted batch exists.
     </ResponseField>
-    <ResponseField name="generated_at" type="string" required>
-      Snapshot wall-clock for this batch.
+    <ResponseField name="generated_at" type="string | null" required>
+      Snapshot wall-clock, KST. Format: `YYYY-MM-DD HH:MM:SS`. `null` when no promoted batch exists.
     </ResponseField>
     <ResponseField name="assets" type="array of objects" required>
+      Always an array — never `null`. Empty array when no promoted batch exists. Sorted by `overall_rank` ascending.
       <Expandable title="per-asset properties">
+        <ResponseField name="uid" type="string" required>
+          Per-asset UUID v5, derived from `(generated_at, symbol)`.
+        </ResponseField>
         <ResponseField name="symbol" type="string" required>Bithumb exchange symbol (uppercase).</ResponseField>
         <ResponseField name="name" type="string" required>Korean asset name.</ResponseField>
         <ResponseField name="image_url" type="string" required>Asset icon URL.</ResponseField>
-        <ResponseField name="uid" type="string" required>Per-asset document ID.</ResponseField>
+        <ResponseField name="overall_rank" type="integer" required>Rank within the scored universe, `1`-based.</ResponseField>
         <ResponseField name="total_score" type="number" required>Overall score `0.0`–`10.0`, one decimal place.</ResponseField>
         <ResponseField name="score_by_category" type="object" required>
-          Object with the six number keys `bullish_momentum / trading_activity / search_trends / price_stability /
-          market_sentiment / price_resilience`. Each `0.0`–`10.0`, one decimal place. See the scoring model
-          table above.
+          Six metric scores. Keys: `upside_energy / trading_activity / search_trend / price_stability /
+          market_sentiment / price_resilience`. Each `0.0`–`10.0`, one decimal place.
         </ResponseField>
-        <ResponseField name="overall_rank" type="integer" required>Asset's rank by `total_score`, `1`–`200`.</ResponseField>
         <ResponseField name="ranking_by_category" type="object" required>
-          Object with the same six keys as `score_by_category`. Each value is an integer `1`–`200` representing
-          that asset's rank within the universe for that category.
+          Same six keys as `score_by_category`. Each value is the asset's integer rank for that category.
         </ResponseField>
         <ResponseField name="opinion" type="string" required>
-          Korean opinion band derived from `total_score`. One of `매우 약세 / 약세 / 중립 / 강세 / 매우 강세`.
+          Korean phrase derived from `total_score`.
         </ResponseField>
         <ResponseField name="interpretation" type="object" required>
-          Object with the same six keys as `score_by_category`. Each value is a ~1-sentence Korean explanation
-          (음/슴체) citing the data behind that category's score.
+          Same six keys as `score_by_category`. Each value is a Korean explanation string.
+          Empty string (`""`) when not yet generated.
         </ResponseField>
       </Expandable>
     </ResponseField>
@@ -117,17 +118,14 @@ The top-level response is an object with **four sibling keys** — `score_rankin
     </ResponseField>
     <ResponseField name="summary" type="string" required>
       Multi-bullet Korean markdown synthesizing the 6 metric scores plus sentiment trend.
-      Each bullet uses `\n- 헤드라인: 본문` form (per QA `ai_assets_1` § 1.5). The first reference to an
-      asset includes the Korean name and bracketed symbol.
+      Each bullet uses `\n- 헤드라인: 본문` form.
     </ResponseField>
   </Expandable>
 </ResponseField>
 
 <ResponseField name="comprehensive_evaluation" type="object" required>
-  Same envelope (`{ uid, generated_at, assets: [...] }`) as `score_ranking`. Each asset carries the
-  per-asset detail shape from SRS §4.6: the six `score_by_category` scores, `total_score`, `opinion`
-  band, `title` (≤ 20 Korean characters, derived from `summary`), multi-bullet `summary`, and
-  `content_creation_date` (`YYYY-MM-DD HH:mm` KST).
+  Same envelope as `score_ranking`. Per-asset shape includes `score_by_category`, `total_score`,
+  `opinion`, `title` (≤ 20 Korean characters), multi-bullet `summary`, and `content_creation_date`.
 </ResponseField>
 
 <ResponseField name="sentiment_trend" type="object" required>
@@ -186,3 +184,54 @@ const data = await response.json();
 
 </RequestExample>
 
+<ResponseExample>
+
+```json 200 — score_ranking (1 asset shown)
+{
+  "success": true,
+  "message": null,
+  "data": {
+    "score_ranking": {
+      "uid": "score_ranking_20260510_1100",
+      "generated_at": "2026-05-10 11:00:00",
+      "assets": [
+        {
+          "uid": "1506608a-d800-47bd-9a95-7ba9a2604a02",
+          "symbol": "BTC",
+          "name": "비트코인",
+          "image_url": "https://static.bithumb.com/resources/img/comm/coin/BTC.png",
+          "overall_rank": 1,
+          "total_score": 8.7,
+          "score_by_category": {
+            "upside_energy": 7.0,
+            "trading_activity": 8.5,
+            "search_trend": 9.0,
+            "price_stability": 6.0,
+            "market_sentiment": 8.0,
+            "price_resilience": 7.5
+          },
+          "ranking_by_category": {
+            "upside_energy": 12,
+            "trading_activity": 5,
+            "search_trend": 2,
+            "price_stability": 47,
+            "market_sentiment": 18,
+            "price_resilience": 9
+          },
+          "opinion": "강세 우위",
+          "interpretation": {
+            "upside_energy": "",
+            "trading_activity": "",
+            "search_trend": "",
+            "price_stability": "",
+            "market_sentiment": "",
+            "price_resilience": ""
+          }
+        }
+      ]
+    }
+  }
+}
+```
+
+</ResponseExample>
