@@ -38,24 +38,23 @@ openapi: openapi.json GET /v1/market/report
 The endpoint returns the standard envelope `{ success, message, data }`. The `data` object contains six
 sibling sections (field order below matches the wire sample).
 
-`must_know_news`, `rise-tokens`, and `drop-tokens` belong to one category — **Key News** (SRS §5.3.2).
-All three share the same item shape, defined once below.
+`must_know_news`, `rise-tokens`, and `drop-tokens` are all **Key News** sections (SRS §5.3.2).
+`rise-tokens` and `drop-tokens` share the same item shape and both include a `symbol` field.
+`must_know_news` (AI-Featured Articles) has no `symbol`.
 
 <ResponseField name="must_know_news" type="array of objects" required>
-  AI-highlighted macro/market news. Source: specialized crypto media and select online outlets. Korean only.
+  AI-Featured Articles — macro/market news highlighted by AI. Source: specialized crypto media and select
+  online outlets. Korean only.
   <Expandable title="item properties">
-    <ResponseField name="symbol" type="string" required>
-      Asset symbol the news item is associated with (①Symbol per SRS §5.3.2).
-    </ResponseField>
     <ResponseField name="title" type="string" required>
-      Korean news headline summary (②News Headline Summary per SRS §5.3.2).
+      Korean news headline summary (①News Headline Summary per SRS §5.3.2).
     </ResponseField>
     <ResponseField name="source" type="string" required>
-      Article source — media company name or Twitter/X account name (③Source per SRS §5.3.2).
+      Article source — media company name or Twitter/X account name (②Source per SRS §5.3.2).
       Wire sample shows publisher names (e.g. `"COINREADERS"`) and internal labels (e.g. `"업계 소식통"`).
     </ResponseField>
     <ResponseField name="datetime" type="string" required>
-      Article publish time, KST (④Posted Date & Time per SRS §5.3.2). Format: `YYYY-MM-DD HH:MM`.
+      Article publish time, KST (③Posted Date & Time per SRS §5.3.2). Format: `YYYY-MM-DD HH:MM`.
     </ResponseField>
     <ResponseField name="content" type="string" required>
       Korean article excerpt / supporting context.
@@ -68,8 +67,27 @@ All three share the same item shape, defined once below.
 </ResponseField>
 
 <ResponseField name="rise-tokens" type="array of objects" required>
-  News items on Bithumb-listed assets with notable upside, with rationale. Same item shape as
-  `must_know_news` above.
+  Top Gaining Coins Today — news items on Bithumb-listed assets with notable upside, with rationale.
+  <Expandable title="item properties">
+    <ResponseField name="symbol" type="string" required>
+      Asset symbol (①Symbol per SRS §5.3.2).
+    </ResponseField>
+    <ResponseField name="title" type="string" required>
+      Korean news headline summary (②News Headline Summary per SRS §5.3.2).
+    </ResponseField>
+    <ResponseField name="source" type="string" required>
+      Article source — media company name or Twitter/X account name (③Source per SRS §5.3.2).
+    </ResponseField>
+    <ResponseField name="datetime" type="string" required>
+      Article publish time, KST (④Posted Date & Time per SRS §5.3.2). Format: `YYYY-MM-DD HH:MM`.
+    </ResponseField>
+    <ResponseField name="content" type="string" required>
+      Korean article excerpt / supporting context.
+    </ResponseField>
+    <ResponseField name="publish_time" type="string" required>
+      Section promotion wall-clock, KST. Format: `YYYY-MM-DD HH:MM`.
+    </ResponseField>
+  </Expandable>
 
   <Note>
     Wire key uses **hyphen**: `rise-tokens` (not `rise_tokens`).
@@ -77,8 +95,8 @@ All three share the same item shape, defined once below.
 </ResponseField>
 
 <ResponseField name="drop-tokens" type="array of objects" required>
-  News items on Bithumb-listed assets with notable downside, with rationale. Same item shape as
-  `must_know_news` above.
+  Top Losing Coins Today — news items on Bithumb-listed assets with notable downside, with rationale.
+  Same item shape as `rise-tokens` above.
 
   <Note>
     Wire key uses **hyphen**: `drop-tokens` (not `drop_tokens`).
@@ -175,7 +193,6 @@ const report = await response.json();
   "data": {
     "must_know_news": [
       {
-        "symbol": "BTC",
         "title": "호르무즈 해협 리스크 완화",
         "source": "COINREADERS",
         "datetime": "2026-05-06 15:08",
