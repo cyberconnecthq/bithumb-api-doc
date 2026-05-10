@@ -1,6 +1,6 @@
 ---
 title: AI Recommended Assets
-description: Data-driven ranking + AI interpretation for top-200 Bithumb KRW market assets.
+description: Data-driven ranking + AI interpretation for top-200 Bithumb-KRW assets. Returns all four shapes (score_ranking / summary / comprehensive_evaluation / sentiment_trend) in a single response.
 openapi: openapi.json GET /v1/market/ai-recommended-assets
 ---
 
@@ -9,74 +9,229 @@ openapi: openapi.json GET /v1/market/ai-recommended-assets
 <h2 style={{ fontSize: "22px", marginBottom: 8 }}>Overview</h2>
 
 <p style={{ fontSize: 15, lineHeight: 1.8 }}>
-  The <strong>AI Asset Recommendation</strong> API delivers ranked insights for crypto assets listed in the
-  <strong>Bithumb KRW</strong> market. It returns the <strong>top 200 tokens by market cap</strong>,
-  combining multi-dimensional scoring with AI-generated interpretation.
-</p>
-
-<p style={{ fontSize: 15, lineHeight: 1.8 }}>
-  The response is a single object keyed by all four shapes (<code>score_ranking</code>, <code>summary</code>, <code>comprehensive_evaluation</code>, <code>sentiment_trend</code>) — described below.
+  The <strong>AI Recommended Assets</strong> API delivers ranked insights for the
+  <strong> top 200 Bithumb-KRW assets</strong> by market cap, combining a six-dimensional scoring model
+  with AI-generated Korean interpretation. The response contains <strong>all four sub-shapes</strong> as
+  sibling keys at the top level — pick whichever shape your UI needs.
 </p>
 
 <Note>
-  This endpoint returns a point-in-time snapshot of the most recent batch.
+  Two convenience variants return subsets of the same hourly snapshot:
+  [`/v1/market/ai-buy-recommendation`](/ai-buy-recommendation) (rank with `total_score ≥ 6.0`, descending)
+  and [`/v1/market/ai-sell-recommendation`](/ai-sell-recommendation) (`total_score < 4.0`, ascending).
 </Note>
 
-<h3 style={{ marginTop: 20 }}>Variants</h3>
+<h3 style={{ marginTop: 20 }}>Cadence & freshness</h3>
 
-<p style={{ fontSize: 15, lineHeight: 1.8 }}>
-  Two additional endpoints return subsets of the same data:
-</p>
+<CardGroup cols={2}>
+  <Card title="Refresh" icon="clock">
+    Hourly snapshot at KST `:00`. Promotion to public read tables completes by `:50` of the previous hour.
+  </Card>
+  <Card title="Snapshot consistency" icon="layer-group">
+    All four shapes share the **same** `generated_at` and per-asset roster. Buy / Sell convenience
+    endpoints are also views over the same batch.
+  </Card>
+</CardGroup>
 
-<ul style={{ fontSize: 15, lineHeight: 1.8 }}>
-  <li><code>/v1/market/ai-buy-recommendation</code> — buy recommendation (rank 1–50, score &ge; 6.0, highest first)</li>
-  <li><code>/v1/market/ai-sell-recommendation</code> — sell recommendation (rank 151–200, score &lt; 6.0, lowest first)</li>
-</ul>
+<h3 style={{ marginTop: 20 }}>The six-metric scoring model</h3>
 
-<h3 style={{ marginTop: 20 }}>Response shapes</h3>
+Total Score = `Round(Average(6 metric scores), 1)`, range `0.0`–`10.0`. Each category is also `0.0`–`10.0` to one decimal place.
 
-<p style={{ fontSize: 15, lineHeight: 1.8 }}>
-  The response object contains four sibling keys, each holding the same <code>{`{ uid, generated_at, assets: [...] }`}</code> envelope but with a different per-asset shape:
-</p>
-
-<ul style={{ fontSize: 15, lineHeight: 1.8 }}>
-  <li>
-    <strong>score_ranking</strong>: asset info + <code>total_score</code>, <code>score_by_category</code>,
-    <code>overall_rank</code>, <code>ranking_by_category</code>, <code>opinion</code>, and <code>interpretation</code>.
-  </li>
-  <li>
-    <strong>summary</strong>: asset info + <code>total_score</code>, <code>score_by_category</code>,
-    <code>title</code> (concise Korean label, max 20 characters), and <code>summary</code> (detailed multi-line markdown analysis interpreting scores).
-  </li>
-  <li>
-    <strong>comprehensive_evaluation</strong>: asset info + <code>total_score</code>, <code>score_by_category</code>,
-    <code>overall_rank</code>, <code>opinion</code>, and <code>interpretation</code>.
-  </li>
-  <li>
-    <strong>sentiment_trend</strong>: asset info + <code>bullish</code>, <code>bearish</code> (integer percentages, 0–100, sum = 100),
-    and <code>sentiment_label</code> (Korean label derived from bullish ratio). Filtered to tokens with sentiment data; sorted bullish-percentage descending.
-  </li>
-</ul>
-
-<h3 style={{ marginTop: 20 }}>Scoring model</h3>
-
-<div style={{ fontSize: 15, lineHeight: 1.8 }}>
-  <p style={{ marginBottom: 8 }}>
-    Total Score is provided together with six category scores (each 0-10):
-  </p>
-
-  <ul>
-    <li><strong>Upside Energy</strong></li>
-    <li><strong>Trading Activity</strong></li>
-    <li><strong>Search Trend</strong></li>
-    <li><strong>Price Stability</strong></li>
-    <li><strong>Market Sentiment</strong></li>
-    <li><strong>Price Resilience</strong></li>
-  </ul>
-</div>
+| Wire key | Korean (rendered) | English | Definition |
+|---|---|---|---|
+| `upside_energy` | 상승에너지 | Bullish Momentum | Price momentum |
+| `trading_activity` | 거래활성도 | Trading Activity | Total trading volume |
+| `search_trend` | 검색트렌드 | Search Trends | Public interest (search volume) |
+| `price_stability` | 가격안정성 | Price Stability | Inverse of volatility (higher = more stable) |
+| `market_sentiment` | 시장심리 | Market Sentiment | News + community + social media |
+| `price_resilience` | 가격방어력 | Price Resilience | How well price holds support against drops |
 
 <Warning>
-  If certain data is unavailable, corresponding fields may be <code>null</code> or omitted.
+  All score fields render with **exactly one decimal place** including trailing zero — `7.0`, `10.0`, `3.0`, never `7` / `10` / `3`. The Mintlify viewer may drop the trailing `.0` cosmetically; the actual response values are correct.
 </Warning>
 
+<h3 style={{ marginTop: 20 }}>Score-to-opinion bands</h3>
+
+`opinion` (and the band shown to users) is deterministically derived from `total_score`:
+
+| `total_score` | `opinion` (Korean) | English |
+|---|---|---|
+| 0.0 – 1.9 | 매우 약세 | Very Weak |
+| 2.0 – 3.9 | 약세 | Weak |
+| 4.0 – 5.9 | 중립 | Neutral |
+| 6.0 – 7.9 | 강세 | Strong |
+| 8.0 – 10.0 | 매우 강세 | Excellent |
+
+---
+
+<h2 style={{ fontSize: "22px", marginBottom: 8 }}>Response Attributes</h2>
+
+The top-level response is an object with **four sibling keys** — `score_ranking`, `summary`,
+`comprehensive_evaluation`, `sentiment_trend` — each carrying the same envelope
+(`{ uid, generated_at, assets: [...] }`) but with a different per-asset shape.
+
+<ResponseField name="score_ranking" type="object" required>
+  Full ranking with per-category scores, ranks, opinion, and Korean interpretations.
+  <Expandable title="envelope properties">
+    <ResponseField name="uid" type="string | null" required>
+      Batch identifier. Format: `score_ranking_YYYYMMDD_HHMM` (KST). `null` when no promoted batch exists.
+    </ResponseField>
+    <ResponseField name="generated_at" type="string | null" required>
+      Snapshot wall-clock, KST. Format: `YYYY-MM-DD HH:MM:SS`. `null` when no promoted batch exists.
+    </ResponseField>
+    <ResponseField name="assets" type="array of objects" required>
+      Always an array — never `null`. Empty array when no promoted batch exists. Sorted by `overall_rank` ascending.
+      <Expandable title="per-asset properties">
+        <ResponseField name="uid" type="string" required>
+          Per-asset UUID v5, derived from `(generated_at, symbol)`.
+        </ResponseField>
+        <ResponseField name="symbol" type="string" required>Bithumb exchange symbol (uppercase).</ResponseField>
+        <ResponseField name="name" type="string" required>Korean asset name.</ResponseField>
+        <ResponseField name="image_url" type="string" required>Asset icon URL.</ResponseField>
+        <ResponseField name="overall_rank" type="integer" required>Rank within the scored universe, `1`–`200`.</ResponseField>
+        <ResponseField name="total_score" type="number" required>Overall score `0.0`–`10.0`, one decimal place.</ResponseField>
+        <ResponseField name="score_by_category" type="object" required>
+          Six metric scores. Keys: `upside_energy / trading_activity / search_trend / price_stability /
+          market_sentiment / price_resilience`. Each `0.0`–`10.0`, one decimal place.
+        </ResponseField>
+        <ResponseField name="ranking_by_category" type="object" required>
+          Same six keys as `score_by_category`. Each value is the asset's integer rank for that category.
+        </ResponseField>
+        <ResponseField name="opinion" type="string" required>
+          Korean phrase derived from `total_score`.
+        </ResponseField>
+        <ResponseField name="interpretation" type="object" required>
+          Same six keys as `score_by_category`. Each value is a Korean explanation string.
+          Empty string (`""`) when not yet generated.
+        </ResponseField>
+      </Expandable>
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="summary" type="object" required>
+  Same envelope as `score_ranking`. Each asset adds `title` and `summary` instead of the rank/opinion fields.
+  <Expandable title="per-asset properties (in addition to common)">
+    <ResponseField name="title" type="string" required>
+      Korean headline derived from the `summary` body. **Max 20 Korean characters.** Generic boilerplate
+      (e.g. `"검색흐름 양호, 전반 우세"`) is rejected; titles must capture the actual narrative.
+    </ResponseField>
+    <ResponseField name="summary" type="string" required>
+      Multi-bullet Korean markdown synthesizing the 6 metric scores plus sentiment trend.
+      Each bullet uses `\n- 헤드라인: 본문` form.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="comprehensive_evaluation" type="object" required>
+  Same envelope as `score_ranking`. Per-asset shape includes `score_by_category`, `total_score`,
+  `opinion`, `title` (≤ 20 Korean characters), multi-bullet `summary`, and `content_creation_date`.
+</ResponseField>
+
+<ResponseField name="sentiment_trend" type="object" required>
+  Same envelope as `score_ranking`. Filtered to tokens with sentiment data; sorted by bullish percentage
+  descending.
+  <Expandable title="per-asset properties (in addition to common)">
+    <ResponseField name="bullish_pct" type="integer" required>
+      Bullish percentage. Integer `0`–`100`.
+    </ResponseField>
+    <ResponseField name="bearish_pct" type="integer" required>
+      Bearish percentage. Integer `0`–`100`. **Invariant: `bullish_pct + bearish_pct = 100`.**
+    </ResponseField>
+    <ResponseField name="sentiment_label" type="string" required>
+      Korean keyword label derived from the bullish ratio. One of
+      `매우 부정 / 부정 / 중립 / 긍정 / 매우 긍정`.
+      The unspaced variants `매우부정` / `매우긍정` are tolerated on read; canonical output stays spaced.
+
+      <Note>
+        This sentiment surface is **distinct** from AI Report's
+        [`community.overall_sentiment`](/ai-report#community), which uses a `{ score: 1–100, label }`
+        struct. Don't unify the two.
+      </Note>
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+---
+
 </div>
+
+<RequestExample>
+
+```bash cURL
+curl --request GET \
+  --url "https://api.asksurf.ai/surf-ai/v1/market/ai-recommended-assets" \
+  --header "Authorization: <api-key>"
+```
+
+```python Python
+import requests
+
+response = requests.get(
+    "https://api.asksurf.ai/surf-ai/v1/market/ai-recommended-assets",
+    headers={"Authorization": "<api-key>"},
+)
+data = response.json()
+```
+
+```javascript JavaScript
+const response = await fetch(
+  "https://api.asksurf.ai/surf-ai/v1/market/ai-recommended-assets",
+  { headers: { Authorization: "<api-key>" } },
+);
+const data = await response.json();
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200 — score_ranking (1 asset shown)
+{
+  "success": true,
+  "message": null,
+  "data": {
+    "score_ranking": {
+      "uid": "score_ranking_20260510_1100",
+      "generated_at": "2026-05-10 11:00:00",
+      "assets": [
+        {
+          "uid": "1506608a-d800-47bd-9a95-7ba9a2604a02",
+          "symbol": "BTC",
+          "name": "비트코인",
+          "image_url": "https://static.bithumb.com/resources/img/comm/coin/BTC.png",
+          "overall_rank": 1,
+          "total_score": 8.7,
+          "score_by_category": {
+            "upside_energy": 7.0,
+            "trading_activity": 8.5,
+            "search_trend": 9.0,
+            "price_stability": 6.0,
+            "market_sentiment": 8.0,
+            "price_resilience": 7.5
+          },
+          "ranking_by_category": {
+            "upside_energy": 12,
+            "trading_activity": 5,
+            "search_trend": 2,
+            "price_stability": 47,
+            "market_sentiment": 18,
+            "price_resilience": 9
+          },
+          "opinion": "강세 우위",
+          "interpretation": {
+            "upside_energy": "",
+            "trading_activity": "",
+            "search_trend": "",
+            "price_stability": "",
+            "market_sentiment": "",
+            "price_resilience": ""
+          }
+        }
+      ]
+    }
+  }
+}
+```
+
+</ResponseExample>

@@ -1,42 +1,212 @@
 ---
 title: Market Report
-description: Consolidated daily overview of the crypto market
+description: Daily Korean market overview in a single response — sentiment, key trends, must-know news, top gainers/losers, and major events.
 openapi: openapi.json GET /v1/market/report
 ---
 
-<div style={{ maxWidth: 720 }}>
+<div style={{ maxWidth: 760 }}>
 
-<h2 style={{ fontSize: '22px', marginBottom: '8px' }}>
-  Overview
-</h2>
+<h2 style={{ fontSize: "22px", marginBottom: 8 }}>Overview</h2>
 
-<p style={{ fontSize: '15px', lineHeight: '1.8', color: '#374151' }}>
-  The Market Report API returns a single point-in-time snapshot that aggregates
-  six independent market views into one response: AI-highlighted news, today's
-  rising and falling tokens, market sentiment, key trend events, and major
-  events tonight.
-</p>
-
-<p style={{ fontSize: '15px', lineHeight: '1.8' }}>
-  Each section comes from its own upstream batch and surfaces its own
-  <code>publish_time</code>; sections do not share a batch timestamp. Missing
-  sections render as <code>null</code> or empty arrays rather than failing the
-  whole response.
+<p style={{ fontSize: 15, lineHeight: 1.8 }}>
+  The <strong>Market Report</strong> API returns a point-in-time snapshot that aggregates
+  <strong> six independent market views</strong> into one response: AI-highlighted news, today's rising and
+  falling tokens, market sentiment, key trend events, and major events tonight.
 </p>
 
 <Note>
-  All outputs are generated as a <strong>point-in-time snapshot</strong> and are intended
-  for informational purposes only. This API does not provide investment advice.
+  Each section comes from its own upstream batch and surfaces its own `publish_time`; sections do not
+  share a batch timestamp. Missing sections render as `null` or empty arrays rather than failing the
+  whole response.
 </Note>
 
-<h3 style={{ marginTop: '24px' }}>What you get</h3>
+<h3 style={{ marginTop: 20 }}>Cadence & freshness</h3>
 
-<ul style={{ fontSize: '15px', lineHeight: '1.8' }}>
-  <li><strong>must_know_news</strong> — AI-highlighted macro/market news digest</li>
-  <li><strong>rise_tokens</strong> / <strong>drop_tokens</strong> — today's biggest gainers and losers with reasons</li>
-  <li><strong>market_sentiment</strong> — Fear &amp; Greed index plus UP/FLAT/DOWN price-fluctuation counts</li>
-  <li><strong>key_trend_events</strong> — major themes shaping the Korean crypto market</li>
-  <li><strong>market_events</strong> — scheduled events for the rest of the day (FOMC, rate decisions, etc.)</li>
-</ul>
+<CardGroup cols={2}>
+  <Card title="Refresh" icon="clock">
+    Daily at **07:50 KST**.
+  </Card>
+  <Card title="Surface scope" icon="newspaper">
+    **Text + ranked lists only**. Charts are scoped to the AI Report surface only.
+  </Card>
+</CardGroup>
+
+---
+
+<h2 style={{ fontSize: "22px", marginBottom: 8 }}>Response Attributes</h2>
+
+The endpoint returns the standard envelope `{ success, message, data }`. The `data` object contains six sibling sections.
+
+`must_know_news`, `rise-tokens`, and `drop-tokens` are all **Key News** sections.
+`rise-tokens` and `drop-tokens` share the same item shape and both include a `symbol` field.
+`must_know_news` (AI-Featured Articles) has no `symbol`.
+
+<ResponseField name="must_know_news" type="array of objects" required>
+  AI-Featured Articles — macro/market news highlighted by AI. Korean only.
+  <Expandable title="item properties">
+    <ResponseField name="title" type="string" required>Korean news headline summary.</ResponseField>
+    <ResponseField name="source" type="string" required>
+      Article source — media company name or Twitter/X account name.
+    </ResponseField>
+    <ResponseField name="datetime" type="string" required>
+      Article publish time, KST. Format: `YYYY-MM-DD HH:MM`.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="rise-tokens" type="array of objects" required>
+  Top Gaining Coins Today — Bithumb-listed assets with notable upside, with rationale.
+  <Expandable title="item properties">
+    <ResponseField name="symbol" type="string" required>Asset symbol.</ResponseField>
+    <ResponseField name="title" type="string" required>Korean news headline summary.</ResponseField>
+    <ResponseField name="source" type="string" required>
+      Article source — media company name or Twitter/X account name.
+    </ResponseField>
+    <ResponseField name="datetime" type="string" required>
+      Article publish time, KST. Format: `YYYY-MM-DD HH:MM`.
+    </ResponseField>
+  </Expandable>
+
+  <Note>
+    Wire key uses **hyphen**: `rise-tokens` (not `rise_tokens`).
+  </Note>
+</ResponseField>
+
+<ResponseField name="drop-tokens" type="array of objects" required>
+  Top Losing Coins Today — Bithumb-listed assets with notable downside, with rationale.
+  Same item shape as `rise-tokens` above.
+
+  <Note>
+    Wire key uses **hyphen**: `drop-tokens` (not `drop_tokens`).
+  </Note>
+</ResponseField>
+
+<ResponseField name="market_sentiment" type="object" required>
+  Fear & Greed index, breadth counts (Up / Flat / Down), and gainer count vs previous day.
+  <Expandable title="properties">
+    <ResponseField name="fear_greed_index" type="integer" required>
+      Fear & Greed score. Range: `0`–`100`. Banded into 5 categories: Extreme Fear / Fear / Neutral /
+      Greed / Extreme Greed.
+    </ResponseField>
+    <ResponseField name="market_price_fluctuations" type="array of objects" required>
+      Up / Flat / Down counts for all coins on the Bithumb KRW market. Each item:
+      `{ type: "UP" | "FLAT" | "DOWN", num: integer }`.
+    </ResponseField>
+    <ResponseField name="rising_assets_vs_previous_day" type="integer" required>
+      Number of gainers vs the previous day (signed integer).
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="key_trend_events" type="array of arrays of objects" required>
+  Key macroeconomic and market trend events. 2-D structure — outer array of groups, each group an array
+  of trend items. Each item: `{ title, summary }` — Korean strings.
+</ResponseField>
+
+<ResponseField name="market_events" type="object" required>
+  Major upcoming KST-scheduled events.
+  <Expandable title="properties">
+    <ResponseField name="major_events" type="array of objects" required>
+      Each item: `{ event_name, datetime }` (KST `YYYY-MM-DD HH:MM`). Limited to **Korean and US events** (FOMC, interest-rate
+      decisions, US/Korea earnings calendar, etc.).
+    </ResponseField>
+    <ResponseField name="publish_time" type="string" required>
+      Section promotion wall-clock, KST. Format: `YYYY-MM-DD HH:MM`.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
 
 </div>
+
+<RequestExample>
+
+```bash cURL
+curl --request GET \
+  --url "https://api.asksurf.ai/surf-ai/v1/market/report" \
+  --header "Authorization: <api-key>"
+```
+
+```python Python
+import requests
+
+response = requests.get(
+    "https://api.asksurf.ai/surf-ai/v1/market/report",
+    headers={"Authorization": "<api-key>"},
+)
+report = response.json()
+```
+
+```javascript JavaScript
+const response = await fetch(
+  "https://api.asksurf.ai/surf-ai/v1/market/report",
+  { headers: { Authorization: "<api-key>" } },
+);
+const report = await response.json();
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{
+  "success": true,
+  "message": null,
+  "data": {
+    "must_know_news": [
+      {
+        "title": "호르무즈 해협 리스크 완화",
+        "source": "COINREADERS",
+        "datetime": "2026-05-06 15:08"
+      }
+    ],
+    "rise-tokens": [
+      {
+        "symbol": "BTC",
+        "title": "에이아이앤에프티(NFT) +25.00% 상승 요인",
+        "source": "업계 소식통",
+        "datetime": "2026-05-06 10:05"
+      }
+    ],
+    "drop-tokens": [
+      {
+        "symbol": "BTC",
+        "title": "알에스에스쓰리(RSS3) -9.76% 하락 요인",
+        "source": "업계 소식통",
+        "datetime": "2026-05-06 10:00"
+      }
+    ],
+    "market_sentiment": {
+      "fear_greed_index": 46,
+      "market_price_fluctuations": [
+        { "type": "UP", "num": 26 },
+        { "type": "FLAT", "num": 388 },
+        { "type": "DOWN", "num": 32 }
+      ],
+      "rising_assets_vs_previous_day": 2
+    },
+    "key_trend_events": [
+      [
+        {
+          "title": "빗썸 거래대금 대형자산 주도 현상",
+          "summary": "비트코인(BTC) 거래대금이 728억 8,447만 원을 기록하며 시장을 주도했습니다. 이더리움(ETH) 거래대금은 502억 3,434만 원 리플(XRP) 거래대금은 279억 6,318만 원으로 후순위를 형성했습니다."
+        },
+        {
+          "title": "헌트 스팀 등 알트코인 거래량 급증",
+          "summary": "헌트(HUNT) 거래대금이 전일 대비 13,0491.04% 증가하여 12억 3,564만 원을 기록했습니다."
+        }
+      ]
+    ],
+    "market_events": {
+      "major_events": [
+        { "event_name": "FOMC 회의 결과 발표", "datetime": "2026-05-06 03:00" },
+        { "event_name": "미국 기준금리 결정", "datetime": "2026-05-06 03:00" },
+        { "event_name": "한국은행 기준금리 결정", "datetime": "2026-05-06 09:00" }
+      ],
+      "publish_time": "2026-05-06 07:50"
+    }
+  }
+}
+```
+
+</ResponseExample>

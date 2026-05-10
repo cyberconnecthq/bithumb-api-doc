@@ -32,8 +32,7 @@ openapi: openapi.json GET /v1/market/token-metrics
 <h3 style={{ marginTop: 20 }}>Coalesce order (per item)</h3>
 
 <p style={{ fontSize: 15, lineHeight: 1.8 }}>
-  For each token, the writer picks the first non-empty Token Terminal series
-  in this order, falling back to CoinGecko if none qualify:
+  For each token, the first available non-empty series is selected in this order:
 </p>
 
 <ul style={{ fontSize: 15, lineHeight: 1.8 }}>
@@ -46,8 +45,8 @@ openapi: openapi.json GET /v1/market/token-metrics
 
 <Note>
   All points within one item share the same <code>metric_id</code>. Different
-  items may have different <code>metric_id</code> values depending on which
-  series Token Terminal had data for; check <code>items[i].metrics[0].metric_id</code>
+  items may have different <code>metric_id</code> values depending on data
+  availability; check <code>items[i].metrics[0].metric_id</code>
   to see which one was selected.
 </Note>
 
@@ -86,3 +85,31 @@ openapi: openapi.json GET /v1/market/token-metrics
 </Note>
 
 </div>
+
+<RequestExample>
+
+```bash cURL
+curl --request GET \
+  --url "https://api.asksurf.ai/surf-ai/v1/market/token-metrics" \
+  --header "Authorization: <api-key>"
+```
+
+```python Python
+import requests
+
+response = requests.get(
+    "https://api.asksurf.ai/surf-ai/v1/market/token-metrics",
+    headers={"Authorization": "<api-key>"},
+)
+metrics = response.json()
+```
+
+```javascript JavaScript
+const response = await fetch(
+  "https://api.asksurf.ai/surf-ai/v1/market/token-metrics",
+  { headers: { Authorization: "<api-key>" } },
+);
+const metrics = await response.json();
+```
+
+</RequestExample>
