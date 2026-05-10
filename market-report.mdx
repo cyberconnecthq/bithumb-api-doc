@@ -36,48 +36,53 @@ openapi: openapi.json GET /v1/market/report
 <h2 style={{ fontSize: "22px", marginBottom: 8 }}>Response Attributes</h2>
 
 The endpoint returns the standard envelope `{ success, message, data }`. The `data` object contains six
-sibling sections (field order below matches the wire sample):
+sibling sections (field order below matches the wire sample).
+
+`must_know_news`, `rise-tokens`, and `drop-tokens` belong to one category — **Key News** (SRS §5.3.2).
+All three share the same item shape, defined once below.
 
 <ResponseField name="must_know_news" type="array of objects" required>
-  AI-highlighted macro/market news for quick daily context. Korean only.
-  <Expandable title="item properties (in wire order)">
-    <ResponseField name="title" type="string" required>Korean headline.</ResponseField>
-    <ResponseField name="content" type="string" required>Korean article excerpt / supporting context.</ResponseField>
+  AI-highlighted macro/market news. Source: specialized crypto media and select online outlets. Korean only.
+  <Expandable title="item properties">
+    <ResponseField name="symbol" type="string" required>
+      Asset symbol the news item is associated with (①Symbol per SRS §5.3.2).
+    </ResponseField>
+    <ResponseField name="title" type="string" required>
+      Korean news headline summary (②News Headline Summary per SRS §5.3.2).
+    </ResponseField>
     <ResponseField name="source" type="string" required>
-      Source attribution. Wire sample shows real publisher names (e.g. `"COINREADERS"`) and internal
-      labels (e.g. `"업계 소식통"`).
+      Article source — media company name or Twitter/X account name (③Source per SRS §5.3.2).
+      Wire sample shows publisher names (e.g. `"COINREADERS"`) and internal labels (e.g. `"업계 소식통"`).
     </ResponseField>
     <ResponseField name="datetime" type="string" required>
-      Article publish time, KST. Format: `YYYY-MM-DD HH:MM`.
+      Article publish time, KST (④Posted Date & Time per SRS §5.3.2). Format: `YYYY-MM-DD HH:MM`.
+    </ResponseField>
+    <ResponseField name="content" type="string" required>
+      Korean article excerpt / supporting context.
     </ResponseField>
     <ResponseField name="publish_time" type="string" required>
       Section promotion wall-clock, KST. Format: `YYYY-MM-DD HH:MM`. Same value across all items in this
       section.
     </ResponseField>
-    <ResponseField name="symbol" type="string" required>
-      Asset symbol the news item is associated with.
-    </ResponseField>
   </Expandable>
 </ResponseField>
 
 <ResponseField name="rise-tokens" type="array of objects" required>
-  News items on Bithumb-listed assets with notable upside, with rationale.
+  News items on Bithumb-listed assets with notable upside, with rationale. Same item shape as
+  `must_know_news` above.
 
   <Note>
     Wire key uses **hyphen**: `rise-tokens` (not `rise_tokens`).
   </Note>
-
-  Item shape is identical to `must_know_news`: `{ title, content, source, datetime, publish_time, symbol }`.
 </ResponseField>
 
 <ResponseField name="drop-tokens" type="array of objects" required>
-  News items on Bithumb-listed assets with notable downside, with rationale.
+  News items on Bithumb-listed assets with notable downside, with rationale. Same item shape as
+  `must_know_news` above.
 
   <Note>
     Wire key uses **hyphen**: `drop-tokens` (not `drop_tokens`).
   </Note>
-
-  Item shape is identical to `must_know_news`: `{ title, content, source, datetime, publish_time, symbol }`.
 </ResponseField>
 
 <ResponseField name="market_sentiment" type="object" required>
@@ -98,9 +103,6 @@ sibling sections (field order below matches the wire sample):
     <ResponseField name="rising_assets_vs_previous_day" type="integer" required>
       **Delta** in the count of rising assets vs the previous day's snapshot (signed integer). Wire
       sample shows `2` (not the absolute count of rising assets).
-    </ResponseField>
-    <ResponseField name="fear_greed_vs_previous_day" type="integer" required>
-      Change in `fear_greed_index` vs the previous day's snapshot (signed integer).
     </ResponseField>
     <ResponseField name="report_time" type="string" required>
       Reference time the snapshot represents, KST. Wire sample uses **dot-separated** date format:
@@ -130,10 +132,6 @@ sibling sections (field order below matches the wire sample):
     </ResponseField>
     <ResponseField name="publish_time" type="string" required>
       Section promotion wall-clock, KST. Format: `YYYY-MM-DD HH:MM`.
-    </ResponseField>
-    <ResponseField name="event_influence" type="string" required>
-      Korean string. Wire sample shows a placeholder value (`"이벤트 영향도"`); semantic content not
-      yet confirmed.
     </ResponseField>
   </Expandable>
 </ResponseField>
