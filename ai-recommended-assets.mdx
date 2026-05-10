@@ -39,9 +39,9 @@ Total Score = `Round(Average(6 metric scores), 1)`, range `0.0`–`10.0`. Each c
 
 | Wire key | Korean (rendered) | English | Definition |
 |---|---|---|---|
-| `upside_energy` | 상승에너지 | Bullish Momentum | Price momentum |
+| `bullish_momentum` | 상승에너지 | Bullish Momentum | Price momentum |
 | `trading_activity` | 거래활성도 | Trading Activity | Total trading volume |
-| `search_trend` | 검색트렌드 | Search Trends | Public interest (search volume) |
+| `search_trends` | 검색트렌드 | Search Trends | Public interest (search volume) |
 | `price_stability` | 가격안정성 | Price Stability | Inverse of volatility (higher = more stable) |
 | `market_sentiment` | 시장심리 | Market Sentiment | News + community + social media |
 | `price_resilience` | 가격방어력 | Price Resilience | How well price holds support against drops |
@@ -87,7 +87,7 @@ The top-level response is an object with **four sibling keys** — `score_rankin
         <ResponseField name="uid" type="string" required>Per-asset document ID.</ResponseField>
         <ResponseField name="total_score" type="number" required>Overall score `0.0`–`10.0`, one decimal place.</ResponseField>
         <ResponseField name="score_by_category" type="object" required>
-          Object with the six number keys `upside_energy / trading_activity / search_trend / price_stability /
+          Object with the six number keys `bullish_momentum / trading_activity / search_trends / price_stability /
           market_sentiment / price_resilience`. Each `0.0`–`10.0`, one decimal place. See the scoring model
           table above.
         </ResponseField>
@@ -124,19 +124,21 @@ The top-level response is an object with **four sibling keys** — `score_rankin
 </ResponseField>
 
 <ResponseField name="comprehensive_evaluation" type="object" required>
-  Same envelope as `score_ranking`. Returns the common asset fields. The exact narrative shape for this
-  mode is not yet locked in the public contract — refer to the live response for the canonical structure.
+  Same envelope (`{ uid, generated_at, assets: [...] }`) as `score_ranking`. Each asset carries the
+  per-asset detail shape from SRS §4.6: the six `score_by_category` scores, `total_score`, `opinion`
+  band, `title` (≤ 20 Korean characters, derived from `summary`), multi-bullet `summary`, and
+  `content_creation_date` (`YYYY-MM-DD HH:mm` KST).
 </ResponseField>
 
 <ResponseField name="sentiment_trend" type="object" required>
   Same envelope as `score_ranking`. Filtered to tokens with sentiment data; sorted by bullish percentage
   descending.
   <Expandable title="per-asset properties (in addition to common)">
-    <ResponseField name="bullish" type="integer" required>
+    <ResponseField name="bullish_pct" type="integer" required>
       Bullish percentage. Integer `0`–`100`.
     </ResponseField>
-    <ResponseField name="bearish" type="integer" required>
-      Bearish percentage. Integer `0`–`100`. **Invariant: `bullish + bearish = 100`.**
+    <ResponseField name="bearish_pct" type="integer" required>
+      Bearish percentage. Integer `0`–`100`. **Invariant: `bullish_pct + bearish_pct = 100`.**
     </ResponseField>
     <ResponseField name="sentiment_label" type="string" required>
       Korean keyword label derived from the bullish ratio. One of

@@ -193,10 +193,10 @@ openapi: openapi.json GET /v1/market/ai-report
         <ResponseField name="score" type="integer" required>
           Sentiment score. Range: `1`–`100`.
         </ResponseField>
-        <ResponseField name="label" type="string" required>
+        <ResponseField name="grade" type="string" required>
           Korean grade band, deterministically derived from `score`:
 
-          | `score` range | `label` |
+          | `score` range | `grade` |
           |---|---|
           | 1–20  | 매우 부정 |
           | 21–40 | 부정 |
@@ -206,12 +206,11 @@ openapi: openapi.json GET /v1/market/ai-report
 
           The unspaced variants `매우부정` / `매우긍정` are tolerated on read; canonical pipeline output
           stays spaced.
+        </ResponseField>
 
-          <Note>
-            SRS §2.9 specifies an additional `analysis` text field on this object (one Korean sentence
-            citing at least one `key_topic` and explaining *why* the score landed there). It is **not
-            present in the BTC wire sample**.
-          </Note>
+        <ResponseField name="analysis" type="string" required>
+          One Korean sentence citing at least one `key_topic` and explaining *why* the score landed
+          there. Pure tonal restatement of the label alone is rejected.
         </ResponseField>
       </Expandable>
     </ResponseField>

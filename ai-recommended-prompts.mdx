@@ -56,54 +56,64 @@ the FE renders as cards.
 
 <h2 style={{ fontSize: "22px", marginBottom: 8 }}>Response Attributes</h2>
 
-The endpoint returns the standard envelope `{ success, message, data }`. The `data` field is an array; each
-item has the same shape (field order below matches the wire sample):
+The endpoint returns the standard envelope `{ success, message, data }`. The `data` field is an array;
+each item is one signal type and has the shape below (per SRS §3.4).
 
 <ResponseField name="type" type="string" required>
   Signal type key. One of the 17 catalogue keys above.
 </ResponseField>
 
-<ResponseField name="conclusion" type="object" required>
-  <Expandable title="properties">
-    <ResponseField name="comprehensive_conclusion" type="string" required>
-      Korean prose synthesizing the signal's bottom-line takeaway.
-    </ResponseField>
-  </Expandable>
-</ResponseField>
-
-<ResponseField name="detailed_analysis" type="object" required>
-  <Expandable title="properties">
-    <ResponseField name="key_factors" type="string" required>
-      Korean prose describing the data points and indicators driving this signal.
-    </ResponseField>
-    <ResponseField name="market_direction" type="string" required>
-      Korean directional label. Wire sample shows values like `"상승"`, `"하락"`, `"중립"`, `"상승세"`,
-      `"상승 가능"`, `"공급 감소"`, `"활동 증가"`, `"고변동"`, `"관심 증가"`, `"이슈 주도"`,
-      `"기관 수급 확인"`, `"긍정"`, `"변동성 확대"`. Open-ended phrase set, not a closed enum.
-    </ResponseField>
-  </Expandable>
-</ResponseField>
-
-<ResponseField name="generated_at" type="string" required>
-  Snapshot wall-clock with seconds, KST. Format: `YYYY-MM-DD HH:MM:SS`.
-</ResponseField>
-
 <ResponseField name="report_time" type="string" required>
-  Reference time, KST. Wire sample uses **dot-separated** date format: `YYYY.MM.DD HH:MM` (no seconds).
-</ResponseField>
-
-<ResponseField name="summary" type="string" required>
-  Short Korean prose summary of the signal (~1–2 sentences).
-</ResponseField>
-
-<ResponseField name="title" type="string" required>
-  LLM-generated short Korean label for this signal item (e.g. `"저평가 자산 후보"`, `"강세 자산 후보"`,
-  `"BTC ETF 플로우"`). **Distinct from the canonical "suggested question" titles** — this is the FE
-  card heading.
+  Reference time the snapshot represents — KST ISO 8601, 30-min aligned.
 </ResponseField>
 
 <ResponseField name="uid" type="string" required>
-  Document identifier. Format: `<type>_YYYYMMDD_HHMM` (KST), `HHMM` aligned to the 30-min cadence.
+  Document identifier. Format: `<type>_YYYYMMDD_HHMM` (KST), `HHMM` aligned to the 30-min cadence
+  (`HHMM ∈ {0000, 0030, 0100, ...}`).
+</ResponseField>
+
+<ResponseField name="title" type="string" required>
+  Canonical Korean title from the §3.3 catalogue above (template-rendered for Q4/Q5 with `{가상자산명}`
+  substitution). **Never LLM-generated.**
+</ResponseField>
+
+<ResponseField name="summary" type="string" required>
+  Korean prose, multi-bullet markdown — ≤4–5 lines. Bullets separated by `\n- ` for FE-side splitting.
+</ResponseField>
+
+<ResponseField name="detailed_analysis" type="object" required>
+  Structured analysis with stable English keys; the FE applies Korean labels at render time.
+  <Expandable title="properties">
+    <ResponseField name="overview" type="string" required>
+      Korean prose for `주요현황` (or per-question alternate `요인`).
+    </ResponseField>
+    <ResponseField name="investment_implication" type="string" required>
+      Korean prose for `투자 시사점` (or per-question alternate `원인 분석`).
+    </ResponseField>
+    <ResponseField name="next_checkpoints" type="string" required>
+      Korean prose for `향후 체크포인트` (or per-question alternate `시사점`).
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="conclusion_neutral_opinion" type="string" required>
+  **Neutral** Korean synthesis combining positive and cautionary signals.
+</ResponseField>
+
+<ResponseField name="conclusion_positive_factors" type="array of strings" required>
+  Korean bullets — **positive evidence only**. No qualifications, no negative phrasing.
+</ResponseField>
+
+<ResponseField name="conclusion_cautionary_factors" type="array of strings" required>
+  Korean bullets — **cautionary evidence only**. No positive phrasing leaks.
+</ResponseField>
+
+<ResponseField name="feedback" type="object">
+  Common feedback metadata block.
+</ResponseField>
+
+<ResponseField name="share" type="object">
+  Common share metadata block.
 </ResponseField>
 
 </div>

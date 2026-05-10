@@ -16,9 +16,9 @@ openapi: openapi.json GET /v1/market/token-metrics
 </p>
 
 <Note>
-  The series is **always exactly 30 entries** (one per day) covering `[generated_at - 30d, generated_at]`.
-  When upstream data is unavailable, a last-known-good cached payload is returned with `analysis = ""`
-  rather than propagating an upstream error.
+  The series is **always exactly 30 entries** covering `[generated_at - 30d, generated_at]`.
+  When upstream data is persistently unavailable, a last-known-good cached payload is returned with
+  `degraded: true` (and `analysis` set to empty string) rather than propagating an upstream error.
 </Note>
 
 <h3 style={{ marginTop: 20 }}>Metric coalesce order</h3>
@@ -40,10 +40,19 @@ The pipeline tries each metric in priority order; the first available, non-zero 
   Bithumb exchange symbol echoed back from the request (uppercase).
 </ResponseField>
 
+<ResponseField name="generated_at" type="string" required>
+  Snapshot wall-clock used as the series anchor (KST ISO 8601). The 30-entry window is
+  `[generated_at − 30d, generated_at]`.
+</ResponseField>
+
 <ResponseField name="analysis" type="string" required>
   Short Korean trend summary (~2–3 sentences) describing start → peak → end of the 30-day series, with a
-  recent-slope note. **Empty string** when the series is too short to analyse or when the response is
-  degraded (no fresh data).
+  recent-slope note. Empty string when the series is too short to analyse or when `degraded` is `true`.
+</ResponseField>
+
+<ResponseField name="degraded" type="boolean">
+  `true` when the response is served from the last-known-good cache due to persistent upstream failure.
+  Omitted (or `false`) on normal responses.
 </ResponseField>
 
 <ResponseField name="metrics" type="array of objects" required>
