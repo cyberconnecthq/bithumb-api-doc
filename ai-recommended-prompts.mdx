@@ -11,29 +11,27 @@ openapi: openapi.json GET /v1/market/ai-recommended-prompts
 <p style={{ fontSize: 15, lineHeight: 1.8 }}>
   The <strong>AI Recommended Prompts</strong> API returns structured Korean analysis across all
   <strong> 17 signal types</strong> covering the Bithumb-KRW market in a single call. Each item in the
-  response array represents one signal, identified by its <code>type</code> field and rendered with a
-  fixed canonical Korean title (never LLM-generated).
+  response array represents one signal, identified by its <code>type</code> field.
 </p>
 
 <Note>
-  Refresh: **every 30 minutes**. Dagster cron `*/30 * * * *` KST. Promotion completes ≥10 min before each
-  cadence mark (i.e. by `:20` and `:50`). The Bithumb FE displays 7 questions per session (3 fixed + 4
-  randomized from the 14 variable types).
+  Refresh: **every 30 minutes** (per SRS §3.1). Promotion completes ≥10 min before each cadence mark
+  (i.e. by `:20` and `:50`). The Bithumb FE displays 7 questions per session (3 fixed + 4 randomized
+  from the 14 variable types).
 </Note>
 
 <Warning>
-  Signal types missing from the latest batch are **skipped** rather than returned as `null`. The array
-  preserves a fixed canonical order (Q1 → Q17 below).
+  Signal types missing from the latest batch are **skipped** rather than returned as `null`.
 </Warning>
 
 ---
 
 <h2 style={{ fontSize: "22px", marginBottom: 8 }}>Signal types (17)</h2>
 
-Titles are **constants** (or templates with `{가상자산명}`) — never LLM-generated. Always render exactly as
-shown in the table.
+The 17 catalogue keys per SRS §3.3 (3 fixed + 14 variable). The wire `title` is an LLM-generated short
+Korean label per item (not a fixed canonical title from a table).
 
-| # | `type` | Group | Canonical Korean title |
+| # | `type` | Group | Suggested Korean question (FE-rendered) |
 |---|---|---|---|
 | 1 | `market_rise_fall_reason` | Fixed | `현재 시장의 상승/하락 이유는?` |
 | 2 | `bullish_assets` | Fixed | `상승추세를 보이는 자산은?` |
@@ -53,64 +51,59 @@ shown in the table.
 | 16 | `top_active_chain` | Market Environment | `가장 활성화된 네트워크는?` |
 | 17 | `undervalued_asset` | Market Environment | `시총 대비 저평가 자산은?` |
 
-<Note>
-  Q4 / Q5 templates render with the **Korean asset name**, not the symbol — e.g. `자이온 상승 이유는?`,
-  not `XION 상승 이유는?` or `XION/KRW`.
-</Note>
-
 ---
 
-<h2 style={{ fontSize: "22px", marginBottom: 8 }}>Per-item Response Attributes</h2>
+<h2 style={{ fontSize: "22px", marginBottom: 8 }}>Response Attributes</h2>
 
-The response is an array; each item has the same shape and represents one signal type.
+The endpoint returns the standard envelope `{ success, message, data }`. The `data` field is an array; each
+item has the same shape (field order below matches the wire sample):
 
 <ResponseField name="type" type="string" required>
   Signal type key. One of the 17 catalogue keys above.
 </ResponseField>
 
-<ResponseField name="report_time" type="string" required>
-  Snapshot wall-clock for this signal's batch.
-</ResponseField>
-
-<ResponseField name="uid" type="string" required>
-  Document identifier for this signal's batch.
-</ResponseField>
-
-<ResponseField name="title" type="string" required>
-  Canonical Korean title from the catalogue above (or template-rendered for Q4/Q5). Never
-  LLM-generated.
-</ResponseField>
-
-<ResponseField name="summary" type="string" required>
-  Korean prose, multi-bullet markdown. ≤4–5 lines. Bullets separated by `\n- ` for FE-side splitting.
+<ResponseField name="conclusion" type="object" required>
+  <Expandable title="properties">
+    <ResponseField name="comprehensive_conclusion" type="string" required>
+      Korean prose synthesizing the signal's bottom-line takeaway.
+    </ResponseField>
+  </Expandable>
 </ResponseField>
 
 <ResponseField name="detailed_analysis" type="object" required>
-  Structured Korean analysis content. The concrete key shape varies per question type — refer to the live
-  response for the canonical fields returned by your `type`.
+  <Expandable title="properties">
+    <ResponseField name="key_factors" type="string" required>
+      Korean prose describing the data points and indicators driving this signal.
+    </ResponseField>
+    <ResponseField name="market_direction" type="string" required>
+      Korean directional label. Wire sample shows values like `"상승"`, `"하락"`, `"중립"`, `"상승세"`,
+      `"상승 가능"`, `"공급 감소"`, `"활동 증가"`, `"고변동"`, `"관심 증가"`, `"이슈 주도"`,
+      `"기관 수급 확인"`, `"긍정"`, `"변동성 확대"`. Open-ended phrase set, not a closed enum.
+    </ResponseField>
+  </Expandable>
 </ResponseField>
 
-<ResponseField name="conclusion_neutral_opinion" type="string" required>
-  **Neutral** Korean synthesis combining positive and cautionary signals.
+<ResponseField name="generated_at" type="string" required>
+  Snapshot wall-clock with seconds, KST. Format: `YYYY-MM-DD HH:MM:SS`.
 </ResponseField>
 
-<ResponseField name="conclusion_positive_factors" type="array of strings" required>
-  Korean bullets — **positive evidence only**. No qualifications, no negative phrasing.
+<ResponseField name="report_time" type="string" required>
+  Reference time, KST. Wire sample uses **dot-separated** date format: `YYYY.MM.DD HH:MM` (no seconds).
 </ResponseField>
 
-<ResponseField name="conclusion_cautionary_factors" type="array of strings" required>
-  Korean bullets — **cautionary evidence only**. No positive phrasing leaks.
+<ResponseField name="summary" type="string" required>
+  Short Korean prose summary of the signal (~1–2 sentences).
 </ResponseField>
 
-<ResponseField name="feedback" type="object">
-  Common feedback metadata block.
+<ResponseField name="title" type="string" required>
+  LLM-generated short Korean label for this signal item (e.g. `"저평가 자산 후보"`, `"강세 자산 후보"`,
+  `"BTC ETF 플로우"`). **Distinct from the canonical "suggested question" titles** — this is the FE
+  card heading.
 </ResponseField>
 
-<ResponseField name="share" type="object">
-  Common share metadata block.
+<ResponseField name="uid" type="string" required>
+  Document identifier. Format: `<type>_YYYYMMDD_HHMM` (KST), `HHMM` aligned to the 30-min cadence.
 </ResponseField>
-
----
 
 </div>
 
@@ -142,3 +135,46 @@ const prompts = await response.json();
 
 </RequestExample>
 
+<ResponseExample>
+
+```json 200
+{
+  "success": true,
+  "message": null,
+  "data": [
+    {
+      "type": "market_rise_fall_reason",
+      "conclusion": {
+        "comprehensive_conclusion": "AI와 레이어2 섹터 중심 매수세 확대 및 공포탐욕 지수 51 기록에 힘입어 시장 상승세가 유지됨. 상승 종목 265개가 하락 169개를 압도하며 7일 평균 37 대비 투자자 심리가 개선된 국면임. 트윗 긍정 언급 증가와 프리미엄 확대가 원화 유입을 촉진함. 특정 섹터 집중 과열은 전체 모멘텀 약화 위험을 동시에 내포함. 향후 거래대금이 7,417억원 수준을 3일 이상 유지하면 상승세 지속으로 매수 검토가 적절하나 감소세로 전환하면 관망이 무난함."
+      },
+      "detailed_analysis": {
+        "key_factors": "상승 종목 수가 하락 종목을 압도하며 시장 방향성 상승세 기록함. 비트코인(BTC)와 이더리움(ETH)가 24시간 변동률 플러스 영역 유지하고 거래대금 확대되면서 매매세 강화함. AI 섹터와 레이어2 섹터가 거래량 상위에 포진하며 집중 현상 나타냄. 온체인 장기 보유자 지갑 활동 증가로 매매 유입이 매도 압력 상회함. 김치프리미엄 플러스 영역 유지하며 국내 매매세가 글로벌 흐름 앞섬. 공포탐욕 지수가 탐욕 구간 진입함.",
+        "market_direction": "상승세"
+      },
+      "generated_at": "2026-05-06 11:30:27",
+      "report_time": "2026.05.06 11:30",
+      "summary": "상승 종목이 하락 종목을 압도하며 시장 상승세를 유지함. AI와 레이어2 섹터에 매수세가 집중되고 김치프리미엄 플러스 영역이 원화 유입을 앞당김. 공포탐욕 지수가 탐욕 구간에 진입하며 투자자 심리가 개선됨.",
+      "title": "에이아이·레이어2 주도 상승세",
+      "uid": "market_rise_fall_reason_20260506_1130"
+    },
+    {
+      "type": "undervalued_asset",
+      "conclusion": {
+        "comprehensive_conclusion": "거래대금과 가격 변동률 대비 관심도가 낮은 자산을 중심으로 저평가 후보를 선별함. 단기 반등 가능성은 있으나 유동성 확인이 필요함."
+      },
+      "detailed_analysis": {
+        "key_factors": "가격 흐름, 거래대금, 시장 관심도, 섹터 모멘텀을 함께 비교함.",
+        "market_direction": "중립"
+      },
+      "generated_at": "2026-05-06 11:30:27",
+      "report_time": "2026.05.06 11:30",
+      "summary": "저평가 가능성이 있는 자산 후보를 정리함.",
+      "title": "저평가 자산 후보",
+      "uid": "undervalued_asset_20260506_1130"
+    }
+    // ... up to 17 entries
+  ]
+}
+```
+
+</ResponseExample>

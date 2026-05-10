@@ -24,79 +24,89 @@ openapi: openapi.json GET /v1/market/report
 
 <CardGroup cols={2}>
   <Card title="Refresh" icon="clock">
-    Daily at **18:00 KST**. Promotion to public read tables completes by **17:50 KST**.
+    Daily at **18:00 KST** (per SRS §5.1). Promotion to public read tables completes by **17:50 KST**.
   </Card>
   <Card title="Surface scope" icon="newspaper">
     **Text + ranked lists only**. Charts are scoped to the AI Report surface only.
   </Card>
 </CardGroup>
 
-<h3 style={{ marginTop: 20 }}>Cross-cutting conventions</h3>
-
-<AccordionGroup>
-  <Accordion title="Language, currency, timezone">
-    All user-facing strings are **Korean**. Currency is **KRW (`원`)** with `만 / 억 / 조` magnitude
-    abbreviations. Timestamps are **Asia/Seoul (KST)**. UTC and USD are forbidden in user-facing fields.
-  </Accordion>
-
-  <Accordion title="Sector taxonomy (closed 14-sector enum)">
-    When sectors appear (e.g. inside `key_trend_events` or news content), they are restricted to:
-    `AI · DeFi · DePIN · Fan Token · Gaming · Layer1 · Layer2 · Meme · Metaverse · NFT · Payments · RWA · Service · Social`.
-    Anything outside this set is invalid.
-  </Accordion>
-
-  <Accordion title="Tone — 음/슴체">
-    Korean prose uses 음/슴체 sentence endings (`~함`, `~판단됨`, `~예상됨`). Banned: `입니다`, `습니다`,
-    `합니다`, `해요`, `있습니다`, `~다.`, `~입니다.`.
-  </Accordion>
-</AccordionGroup>
-
 ---
 
 <h2 style={{ fontSize: "22px", marginBottom: 8 }}>Response Attributes</h2>
 
-The top-level response contains **six sibling keys**, each corresponding to one market view.
+The endpoint returns the standard envelope `{ success, message, data }`. The `data` object contains six
+sibling sections (field order below matches the wire sample):
 
-<ResponseField name="market_sentiment" type="object" required>
-  Fear & Greed index, breadth counts (Up / Flat / Down), and gainer count vs previous day.
-  <Expandable title="properties">
-    <ResponseField name="report_time" type="string" required>
-      Reference time the snapshot represents (KST). Sample-data validation runs use canonical
-      `YYYY-MM-DD 07:50` (per SRS §5.1).
+<ResponseField name="must_know_news" type="array of objects" required>
+  AI-highlighted macro/market news for quick daily context. Korean only.
+  <Expandable title="item properties (in wire order)">
+    <ResponseField name="title" type="string" required>Korean headline.</ResponseField>
+    <ResponseField name="content" type="string" required>Korean article excerpt / supporting context.</ResponseField>
+    <ResponseField name="source" type="string" required>Publisher name (e.g. `"COINREADERS"`).</ResponseField>
+    <ResponseField name="datetime" type="string" required>
+      Article publish time, KST. Format: `YYYY-MM-DD HH:MM`.
     </ResponseField>
     <ResponseField name="publish_time" type="string" required>
-      Wall-clock when this section was promoted (KST).
+      Section promotion wall-clock, KST. Format: `YYYY-MM-DD HH:MM`. Same value across all items in this
+      section.
     </ResponseField>
-    <ResponseField name="fear_greed_index" type="integer" required>
-      Fear & Greed score. Range: `0`–`100`. Banded into 5 categories: Extreme Fear / Fear / Neutral /
-      Greed / Extreme Greed.
-    </ResponseField>
-    <ResponseField name="fear_greed_interpretation" type="string" required>
-      Korean prose interpretation of the index.
-    </ResponseField>
-    <ResponseField name="rising_assets_vs_previous_day" type="integer" required>
-      Count of Bithumb-KRW assets whose 24-hour change is positive vs the prior day's snapshot.
-    </ResponseField>
-    <ResponseField name="market_price_fluctuations" type="array of objects" required>
-      Breadth counts — typically 3 entries (Up / Flat / Down). Each item: `{ type: "UP" | "FLAT" | "DOWN", num: integer }`.
-      Sum across the three entries equals the size of the Bithumb-KRW market at `report_time`.
+    <ResponseField name="symbol" type="string" required>
+      Asset symbol the news item is associated with.
     </ResponseField>
   </Expandable>
 </ResponseField>
 
-<ResponseField name="must_know_news" type="array of objects" required>
-  AI-highlighted macro/market news for quick daily context. Korean only. Each item:
-  `{ title, content, source, datetime, publish_time }` (KST timestamps).
+<ResponseField name="rise-tokens" type="array of objects" required>
+  News items on Bithumb-listed assets with notable upside, with rationale.
+
+  <Note>
+    Wire key uses **hyphen**: `rise-tokens` (not `rise_tokens`).
+  </Note>
+
+  Item shape is identical to `must_know_news`: `{ title, content, source, datetime, publish_time, symbol }`.
 </ResponseField>
 
-<ResponseField name="rise_tokens" type="array of objects" required>
-  News items on Bithumb-listed assets with notable upside, with rationale. Same item shape as
-  `must_know_news`.
+<ResponseField name="drop-tokens" type="array of objects" required>
+  News items on Bithumb-listed assets with notable downside, with rationale.
+
+  <Note>
+    Wire key uses **hyphen**: `drop-tokens` (not `drop_tokens`).
+  </Note>
+
+  Item shape is identical to `must_know_news`: `{ title, content, source, datetime, publish_time, symbol }`.
 </ResponseField>
 
-<ResponseField name="drop_tokens" type="array of objects" required>
-  News items on Bithumb-listed assets with notable downside, with rationale. Same item shape as
-  `must_know_news`.
+<ResponseField name="market_sentiment" type="object" required>
+  Fear & Greed index, breadth counts (Up / Flat / Down), and gainer count vs previous day.
+  <Expandable title="properties (in wire order)">
+    <ResponseField name="fear_greed_index" type="integer" required>
+      Fear & Greed score. Range: `0`–`100`. Banded into 5 categories per SRS §5.3.1: Extreme Fear / Fear /
+      Neutral / Greed / Extreme Greed.
+    </ResponseField>
+    <ResponseField name="fear_greed_interpretation" type="string" required>
+      Korean keyword label for the band. Wire sample shows the bare keyword (e.g. `"중립"`), not a
+      sentence.
+    </ResponseField>
+    <ResponseField name="market_price_fluctuations" type="array of objects" required>
+      Breadth counts — typically 3 entries (Up / Flat / Down). Each item:
+      `{ type: "UP" | "FLAT" | "DOWN", num: integer }`.
+    </ResponseField>
+    <ResponseField name="rising_assets_vs_previous_day" type="integer" required>
+      Count of Bithumb-KRW assets whose 24-hour change is positive vs the prior day's snapshot.
+    </ResponseField>
+    <ResponseField name="fear_greed_vs_previous_day" type="integer" required>
+      Change in `fear_greed_index` vs the previous day's snapshot (signed integer).
+    </ResponseField>
+    <ResponseField name="report_time" type="string" required>
+      Reference time the snapshot represents, KST. Wire sample uses **dot-separated** date format:
+      `YYYY.MM.DD HH:MM`.
+    </ResponseField>
+    <ResponseField name="publish_time" type="string" required>
+      Section promotion wall-clock, KST. Wire sample uses **hyphen-separated** date format:
+      `YYYY-MM-DD HH:MM`.
+    </ResponseField>
+  </Expandable>
 </ResponseField>
 
 <ResponseField name="key_trend_events" type="array of arrays of objects" required>
@@ -108,17 +118,20 @@ The top-level response contains **six sibling keys**, each corresponding to one 
 
 <ResponseField name="market_events" type="object" required>
   Major upcoming KST-scheduled events.
-  <Expandable title="properties">
-    <ResponseField name="datetime" type="string" required>Snapshot reference time (KST).</ResponseField>
-    <ResponseField name="publish_time" type="string" required>Promotion wall-clock (KST).</ResponseField>
+  <Expandable title="properties (in wire order)">
     <ResponseField name="major_events" type="array of objects" required>
-      Minimum **5 events** by importance level (per SRS §5.3.3). Each item: `{ event_name, datetime }`.
-      Limited to **Korean and US events** (FOMC, interest-rate decisions, US/Korea earnings calendar, etc.).
+      Minimum **5 events** by importance level (per SRS §5.3.3). Each item: `{ event_name, datetime }`
+      (KST `YYYY-MM-DD HH:MM`). Limited to **Korean and US events** (FOMC, interest-rate decisions,
+      US/Korea earnings calendar, etc.).
+    </ResponseField>
+    <ResponseField name="publish_time" type="string" required>
+      Section promotion wall-clock, KST. Format: `YYYY-MM-DD HH:MM`.
+    </ResponseField>
+    <ResponseField name="event_influence" type="string" required>
+      Korean string describing the events' market impact.
     </ResponseField>
   </Expandable>
 </ResponseField>
-
----
 
 </div>
 
@@ -150,3 +163,79 @@ const report = await response.json();
 
 </RequestExample>
 
+<ResponseExample>
+
+```json 200
+{
+  "success": true,
+  "message": null,
+  "data": {
+    "must_know_news": [
+      {
+        "title": "호르무즈 해협 리스크 완화",
+        "content": "미국 국무장관 이란 군사작전 종료 선언으로 호르무즈 해협 봉쇄 우려 감소 관측되며 글로벌 위험자산 수요 확대 기대 형성",
+        "source": "COINREADERS",
+        "datetime": "2026-05-06 15:08",
+        "publish_time": "2026-05-06 07:50",
+        "symbol": "BTC"
+      }
+    ],
+    "rise-tokens": [
+      {
+        "title": "에이아이앤에프티(NFT) +25.00% 상승 요인",
+        "content": "트론 AI 인프라 부각으로 +25.00% 상승 관측됨. 온체인 AI 도구 제공과 에이아이앤에프티(NFT) 마켓플레이스 유지 확대됨. 시장 관심 유입 지속 전망.",
+        "source": "업계 소식통",
+        "datetime": "2026-05-06 10:05",
+        "publish_time": "2026-05-06 07:50",
+        "symbol": "BTC"
+      }
+    ],
+    "drop-tokens": [
+      {
+        "title": "알에스에스쓰리(RSS3) -9.76% 하락 요인",
+        "content": "알트코인 전반 약세 영향으로 알에스에스쓰리(RSS3) -9.76% 하락 기록됨. 매도세 확대 지속으로 단기 조정 국면 판단됨. 투자심리 위축 확대 관측됨.",
+        "source": "업계 소식통",
+        "datetime": "2026-05-06 10:00",
+        "publish_time": "2026-05-06 07:50",
+        "symbol": "BTC"
+      }
+    ],
+    "market_sentiment": {
+      "fear_greed_index": 46,
+      "fear_greed_interpretation": "중립",
+      "market_price_fluctuations": [
+        { "type": "UP", "num": 26 },
+        { "type": "FLAT", "num": 388 },
+        { "type": "DOWN", "num": 32 }
+      ],
+      "rising_assets_vs_previous_day": 2,
+      "fear_greed_vs_previous_day": -2,
+      "report_time": "2026.05.06 07:50",
+      "publish_time": "2026-05-06 07:50"
+    },
+    "key_trend_events": [
+      [
+        {
+          "title": "빗썸 거래대금 대형자산 주도 현상",
+          "summary": "비트코인(BTC) 거래대금이 728억 8,447만 원을 기록하며 시장을 주도했습니다. 이더리움(ETH) 거래대금은 502억 3,434만 원 리플(XRP) 거래대금은 279억 6,318만 원으로 후순위를 형성했습니다."
+        },
+        {
+          "title": "헌트 스팀 등 알트코인 거래량 급증",
+          "summary": "헌트(HUNT) 거래대금이 전일 대비 13,0491.04% 증가하여 12억 3,564만 원을 기록했습니다."
+        }
+      ]
+    ],
+    "market_events": {
+      "major_events": [
+        { "event_name": "FOMC 회의 결과 발표", "datetime": "2026-05-06 03:00" },
+        { "event_name": "미국 기준금리 결정", "datetime": "2026-05-06 03:00" },
+        { "event_name": "한국은행 기준금리 결정", "datetime": "2026-05-06 09:00" }
+      ],
+      "publish_time": "2026-05-06 07:50",
+      "event_influence": "이벤트 영향도"
+    }
+  }
+}
+```
+
+</ResponseExample>
