@@ -85,24 +85,8 @@ each item is one signal type and has the shape below (per SRS §3.4).
   Structured Korean analysis. Keys vary per question type.
 </ResponseField>
 
-<ResponseField name="conclusion_neutral_opinion" type="string" required>
-  **Neutral** Korean synthesis combining positive and cautionary signals.
-</ResponseField>
-
-<ResponseField name="conclusion_positive_factors" type="array of strings" required>
-  Korean bullets — **positive evidence only**. No qualifications, no negative phrasing.
-</ResponseField>
-
-<ResponseField name="conclusion_cautionary_factors" type="array of strings" required>
-  Korean bullets — **cautionary evidence only**. No positive phrasing leaks.
-</ResponseField>
-
-<ResponseField name="feedback" type="object">
-  Common feedback metadata block.
-</ResponseField>
-
-<ResponseField name="share" type="object">
-  Common share metadata block.
+<ResponseField name="conclusion" type="object" required>
+  Korean conclusion. Keys vary per question type.
 </ResponseField>
 
 </div>
@@ -149,17 +133,7 @@ const prompts = await response.json();
       "title": "현재 시장의 상승/하락 이유는?",
       "summary": "상승 종목이 하락 종목을 압도하며 시장 상승세를 유지함.\n- AI와 레이어2 섹터에 매수세가 집중되고 김치프리미엄 플러스 영역이 원화 유입을 앞당김.\n- 공포탐욕 지수가 탐욕 구간에 진입하며 투자자 심리가 개선됨.",
       "detailed_analysis": {},
-      "conclusion_neutral_opinion": "AI와 레이어2 섹터 중심 매수세 확대 및 공포탐욕 지수 51 기록에 힘입어 시장 상승세가 유지됨. 특정 섹터 집중 과열은 전체 모멘텀 약화 위험을 동시에 내포함.",
-      "conclusion_positive_factors": [
-        "상승 종목 265개가 하락 169개를 압도하며 시장 방향성 상승세 확인됨.",
-        "공포탐욕 지수 51 기록으로 7일 평균 37 대비 투자자 심리 개선됨."
-      ],
-      "conclusion_cautionary_factors": [
-        "AI·레이어2 섹터 집중 과열로 전체 모멘텀 약화 위험 내포함.",
-        "거래대금 감소세 전환 시 단기 조정 가능성 존재함."
-      ],
-      "feedback": {},
-      "share": {}
+      "conclusion": {}
     },
     {
       "type": "undervalued_asset",
@@ -168,15 +142,7 @@ const prompts = await response.json();
       "title": "시총 대비 저평가 자산은?",
       "summary": "저평가 가능성이 있는 자산 후보를 정리함.\n- 거래대금과 가격 변동률 대비 관심도가 낮은 자산을 중심으로 선별함.\n- 단기 반등 가능성은 있으나 유동성 확인이 필요함.",
       "detailed_analysis": {},
-      "conclusion_neutral_opinion": "시가총액 대비 저평가 후보 자산이 존재하나 유동성 확인이 선행되어야 함.",
-      "conclusion_positive_factors": [
-        "시가총액 대비 거래 활동이 낮아 저평가 반등 여지가 존재함."
-      ],
-      "conclusion_cautionary_factors": [
-        "유동성이 낮아 진입 및 청산 시 슬리피지 위험이 높음."
-      ],
-      "feedback": {},
-      "share": {}
+      "conclusion": {}
     }
   ]
 }
