@@ -43,49 +43,28 @@ sibling sections (field order below matches the wire sample).
 `must_know_news` (AI-Featured Articles) has no `symbol`.
 
 <ResponseField name="must_know_news" type="array of objects" required>
-  AI-Featured Articles — macro/market news highlighted by AI. Source: specialized crypto media and select
-  online outlets. Korean only.
+  AI-Featured Articles — macro/market news highlighted by AI. Korean only.
   <Expandable title="item properties">
-    <ResponseField name="title" type="string" required>
-      Korean news headline summary (①News Headline Summary per SRS §5.3.2).
-    </ResponseField>
+    <ResponseField name="title" type="string" required>Korean news headline summary.</ResponseField>
     <ResponseField name="source" type="string" required>
-      Article source — media company name or Twitter/X account name (②Source per SRS §5.3.2).
-      Wire sample shows publisher names (e.g. `"COINREADERS"`) and internal labels (e.g. `"업계 소식통"`).
+      Article source — media company name or Twitter/X account name.
     </ResponseField>
     <ResponseField name="datetime" type="string" required>
-      Article publish time, KST (③Posted Date & Time per SRS §5.3.2). Format: `YYYY-MM-DD HH:MM`.
-    </ResponseField>
-    <ResponseField name="content" type="string" required>
-      Korean article excerpt / supporting context.
-    </ResponseField>
-    <ResponseField name="publish_time" type="string" required>
-      Section promotion wall-clock, KST. Format: `YYYY-MM-DD HH:MM`. Same value across all items in this
-      section.
+      Article publish time, KST. Format: `YYYY-MM-DD HH:MM`.
     </ResponseField>
   </Expandable>
 </ResponseField>
 
 <ResponseField name="rise-tokens" type="array of objects" required>
-  Top Gaining Coins Today — news items on Bithumb-listed assets with notable upside, with rationale.
+  Top Gaining Coins Today — Bithumb-listed assets with notable upside, with rationale.
   <Expandable title="item properties">
-    <ResponseField name="symbol" type="string" required>
-      Asset symbol (①Symbol per SRS §5.3.2).
-    </ResponseField>
-    <ResponseField name="title" type="string" required>
-      Korean news headline summary (②News Headline Summary per SRS §5.3.2).
-    </ResponseField>
+    <ResponseField name="symbol" type="string" required>Asset symbol.</ResponseField>
+    <ResponseField name="title" type="string" required>Korean news headline summary.</ResponseField>
     <ResponseField name="source" type="string" required>
-      Article source — media company name or Twitter/X account name (③Source per SRS §5.3.2).
+      Article source — media company name or Twitter/X account name.
     </ResponseField>
     <ResponseField name="datetime" type="string" required>
-      Article publish time, KST (④Posted Date & Time per SRS §5.3.2). Format: `YYYY-MM-DD HH:MM`.
-    </ResponseField>
-    <ResponseField name="content" type="string" required>
-      Korean article excerpt / supporting context.
-    </ResponseField>
-    <ResponseField name="publish_time" type="string" required>
-      Section promotion wall-clock, KST. Format: `YYYY-MM-DD HH:MM`.
+      Article publish time, KST. Format: `YYYY-MM-DD HH:MM`.
     </ResponseField>
   </Expandable>
 
@@ -95,7 +74,7 @@ sibling sections (field order below matches the wire sample).
 </ResponseField>
 
 <ResponseField name="drop-tokens" type="array of objects" required>
-  Top Losing Coins Today — news items on Bithumb-listed assets with notable downside, with rationale.
+  Top Losing Coins Today — Bithumb-listed assets with notable downside, with rationale.
   Same item shape as `rise-tokens` above.
 
   <Note>
@@ -195,9 +174,7 @@ const report = await response.json();
       {
         "title": "호르무즈 해협 리스크 완화",
         "source": "COINREADERS",
-        "datetime": "2026-05-06 15:08",
-        "content": "미국 국무장관 이란 군사작전 종료 선언으로 호르무즈 해협 봉쇄 우려 감소 관측되며 글로벌 위험자산 수요 확대 기대 형성",
-        "publish_time": "2026-05-06 07:50"
+        "datetime": "2026-05-06 15:08"
       }
     ],
     "rise-tokens": [
@@ -205,9 +182,7 @@ const report = await response.json();
         "symbol": "BTC",
         "title": "에이아이앤에프티(NFT) +25.00% 상승 요인",
         "source": "업계 소식통",
-        "datetime": "2026-05-06 10:05",
-        "content": "트론 AI 인프라 부각으로 +25.00% 상승 관측됨. 온체인 AI 도구 제공과 에이아이앤에프티(NFT) 마켓플레이스 유지 확대됨. 시장 관심 유입 지속 전망.",
-        "publish_time": "2026-05-06 07:50"
+        "datetime": "2026-05-06 10:05"
       }
     ],
     "drop-tokens": [
@@ -215,9 +190,7 @@ const report = await response.json();
         "symbol": "BTC",
         "title": "알에스에스쓰리(RSS3) -9.76% 하락 요인",
         "source": "업계 소식통",
-        "datetime": "2026-05-06 10:00",
-        "content": "알트코인 전반 약세 영향으로 알에스에스쓰리(RSS3) -9.76% 하락 기록됨. 매도세 확대 지속으로 단기 조정 국면 판단됨. 투자심리 위축 확대 관측됨.",
-        "publish_time": "2026-05-06 07:50"
+        "datetime": "2026-05-06 10:00"
       }
     ],
     "market_sentiment": {
